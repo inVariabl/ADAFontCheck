@@ -1,0 +1,24 @@
+{
+  "name": "adafontcheck",
+  "version": "1.0.0",
+  "description": "Determine if a font meets ADA requirements",
+  "main": "mk1.js",
+  "dependencies": {
+    "fast-csv": "^2.4.1",
+    "opentype.js": "^0.10.0",
+    "path": "^0.12.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "keywords": [
+    "ADA",
+    "font",
+    "opentype",
+    "truetype"
+  ],
+  "author": "Daniel Crooks",
+  "license": "ISC"
+}
