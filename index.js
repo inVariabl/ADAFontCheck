@@ -2,96 +2,24 @@
 // Created by Daniel Crooks
 // github.com/inVariabl/ADAFontCheck
 
-const opentype = require('opentype.js'),
-  fs = require('fs'),
-  path = require('path'),
-  glob = require('glob'),
-  fastcsv = require('fast-csv');
+const opentype = require('opentype.js');
+  //fs = require('fs');
+  //path = require('path');
+  //glob = require('glob');
+  //fastcsv = require('fast-csv'),
+  //express = require('express');
 //  flags = require('flags'),
 //  commander = require('commander');
-//  express = require('express'),
 
-var strokeMinimum = 10,
+// Brains
+function checkfont(fontname) {
+  var strokeMinimum = 10,
   strokeMaximum = 20,
   bodyMinimum = 60,
   bodyMaximum = 100;
 
-/* >to become flags */
-
-function checkfont(fontname) {
   var font = opentype.loadSync(fontname);
   var font_name = font.names.fontFamily.en;
-
-  function output(prefix, name, value) {
-    // e.g. > Stroke Width Ratio:    15%
-    if (value === undefined) {
-      console.log(prefix + " " + name);
-    } else {
-      console.log(prefix + " " + name + ":" + '\t' + value);
-    }
-  }
-
-  function outputRequirements(min, max, type) {
-    console.log("> ADA " + type + " Requirements: " + '\t' + min + "%" + " - " + max + "%");
-  }
-
-  function test(testname, results, passMessage, failMessage) {
-    if (results === true) {
-      // e.g. > Stroke Width Test:    Passed!
-      console.log("*** " + testname + " Test:" + '\t' + "Passed!");
-      if (passMessage !== undefined) {
-        console.log("*** " + passMessage);
-      }
-    } else if (results !== true) {
-      console.log("!!! " + testname + " Test:" + '\t' + "Failed!");
-      if (failMessage !== undefined) {
-        console.log("!!! " + failMessage);
-      }
-      return;
-    } else {
-      console.error("test function error");
-    }
-  }
-
-  // Outputs
-  function verboseOutput() {
-
-    output(">", "Font Information");
-    output("", "Name", font_name);
-    output("", "Weight", font.names.fontSubfamily.en);
-    //test("Italic", italic, "Font is not Italic", "Font is Italic");
-    test("Italic", not_italicTest());
-
-    function outputLetter(name, letter, xvals, yvals, width, height, min, max, ratio, testname) {
-      output(">", name + " Width Test");
-      output("", "Letter '" + letter + "'");
-      output("", "X-Values", xvals);
-      output("", "Y-Values", yvals);
-      output("", "Width", width);
-      output("", "Height", height);
-      outputRequirements(min, max, name);
-      output(">", name + " Width Ratio", ratio);
-      test(name + " Width", testname);
-    }
-
-    outputLetter("Stroke", "I", i_x_vals_nd, i_y_vals_nd, i_width, i_height, strokeMinimum, strokeMaximum, s_ratio, strokeTest());
-    outputLetter("Body", "H", h_x_vals_nd, h_y_vals_nd, h_width, h_height, bodyMinimum, bodyMaximum, h_ratio, bodyTest());
-    outputLetter("Body", "O", o_x_vals_nd, o_y_vals_nd, o_width, o_height, bodyMinimum, bodyMaximum, o_ratio, bodyTest());
-    output("", "Average Body Ratio", bodyAverage);
-    test("ADA Font Final", adaTest());
-
-  }
-
-  function minimalOutput() {
-    if (adaTest) {
-      // e.g. + 'Roboto Mono' - Passed!
-      console.log("+ " + "'" + font_name + "'" + " - " + "Passed!");
-      return;
-    } else {
-      console.log("+ " + "'" + font_name + "'" + " - " + "Failed!");
-      return;
-    }
-  }
 
   // Tests
   // Pre-Requisites
@@ -119,8 +47,6 @@ function checkfont(fontname) {
 
   splitArray(letter_i_coor, i_x_vals, i_y_vals);
 
-  console.log(letter_i_coor);
-
   function removeUndefined(array) {
     var j = array.indexOf(undefined);
     array.splice(j, j);
@@ -135,6 +61,7 @@ function checkfont(fontname) {
       return array.indexOf(item) === pos;
     })
   }
+
   function modifyArray(x_vals, y_vals) {
     removeUndefined(x_vals);
     removeUndefined(y_vals);
@@ -228,49 +155,73 @@ function checkfont(fontname) {
   var o_ratio = (o_width / o_height) * 100;
   var bodyAverage = (h_ratio + o_ratio) / 2;
 
-  //console.log("Stroke: " + strokeTest());
-  //console.log("Body: " + bodyTest());
-  //console.log("ADA Test: " + adaTest());
-
-  console.log('\n' + "*---------------------------------------------*" + '\n');
-
   function bodyTest() {
     return bodyAverage >= bodyMinimum && bodyAverage <= bodyMaximum;
   }
   function adaTest() {
-    if (strokeTest && bodyTest) {
+    if (strokeTest() && bodyTest() && not_italicTest()) {
       return true;
+    } else {
+      return false;
     }
   }
-  verboseOutput();
-  //minimalOutput();
+
+    var font_details = {
+      name: font_name,
+      weight: font.names.fontSubfamily.en,
+      letter_i: {
+        x: i_x_vals_nd,
+        y: i_y_vals_nd,
+        width: i_width,
+        height: i_height,
+        ratio: s_ratio,
+      },
+      letter_h: {
+        x: h_x_vals_nd,
+        y: h_y_vals_nd,
+        width: h_width,
+        height: h_height,
+        ratio: h_ratio,
+      },
+      letter_o: {
+        x: o_x_vals_nd,
+        y: o_y_vals_nd,
+        width: o_width,
+        height: o_height,
+        ratio: o_ratio,
+      },
+      stroke_req: {
+        min: strokeMinimum,
+        max: strokeMaximum,
+      },
+      body_req: {
+        min: bodyMinimum,
+        max: bodyMaximum,
+      },
+      test: {
+        notitalic: not_italicTest(),
+        stroke: strokeTest(),
+        body: bodyTest(),
+        ada: adaTest(),
+      }
+  }
+  /*
+  not_italicTest();
+  strokeTest();
+  bodyTest();
+  adaTest();
+  */
+
+function minimalOutput() {
+  console.log(font_details.name, font_details.test.ada);
+}
+function verboseOutput() {
+  console.log(font_details);
+}
 
   return;
 }
 
-//checkfont('Fonts/Roboto_Mono/RobotoMono-Regular.ttf'); // Passes
-
-//var fontfolder = [];
-//var fontfolder = lsdir('Fonts/');
-//console.log(fontlist);
-
-/*for (var i = 0; i < fontfolder.length; i++) {
-  checkfont[i];
-}*/
-
-// Serifs
-checkfont('Fonts/Merriweather/Merriweather-Black.ttf');
-
-// Outliers
-//checkfont('Fonts/Alegreya\ Sans/Unknown/AlegreyaSans\ Black.otf');
-//checkfont('Fonts/Fontin\ Sans/Unknown/FontinSans\ Bold.otf');
-//checkfont('Fonts/K2D/K2D-Bold.ttf');
-//checkfont('Fonts/Mali/Mali-Bold.ttf');
-//checkfont('Fonts/Rosario/Unknown/Rosario\ Bold.otf')
-//checkfont('Fonts/Roboto_Mono/RobotoMono-Medium.ttf'); // Passed
-//checkfont('Fonts/Martel_Sans/Martelsans-Bold.otf');
-//checkfont('Fonts/Roboto/Roboto-Italic.ttf');
-//checkfont('Fonts/Roboto/Roboto-BoldItalic.ttf');
-//checkfont('Fonts/Decalotype/Decalotype-Black.otf');
-//checkfont('Fonts/Decalotype/Decalotype-Bold.otf');
-//checkfont('Fonts/Fira\ Sans\ Condensed/FiraSansCondensed-Bold.otf');
+checkfont('Fonts/Roboto/Roboto-Regular.ttf');
+checkfont('Fonts/Roboto/Roboto-Black.ttf');
+//checkfont('Fonts/Roboto/Roboto-Thin.ttf');
