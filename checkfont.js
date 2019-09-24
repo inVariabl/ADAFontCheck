@@ -8,24 +8,7 @@ function checkfont(fontname) {
   bodyMinimum = 60,
   bodyMaximum = 100;
 
-  opentype.load(fontname, function(err, font) {
-    if (err) {
-        alert('Font could not be loaded: ' + err);
-    } else {
-        // Now let's display it on a canvas with id "canvas"
-        var ctx = document.getElementById('canvas').getContext('2d');
-
-        // Construct a Path object containing the letter shapes of the given text.
-        // The other parameters are x, y and fontSize.
-        // Note that y is the position of the baseline.
-        var path = font.getPath('Hello, World!', 0, 150, 72);
-
-        // If you just want to draw the text you can also use font.draw(ctx, text, x, y, fontSize).
-        path.draw(ctx);
-    }
-});
-
-  var font = opentype.loadSync(fontname);
+  var font = fontname;
   var font_name = font.names.fontFamily.en;
 
   // Tests
@@ -216,8 +199,6 @@ function checkfont(fontname) {
 function minimalOutput() {
   console.log(font_details.name, font_details.test.ada);
 }
-function verboseOutput() {
-  console.log(font_details);
-}
-  return;
+  return font_details;
+//verboseOutput();
 }

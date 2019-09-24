@@ -1,6 +1,5 @@
 console.log("Starting ADA Font Check...");
 const input = document.querySelector('input[type="file"]');
-//const input = document.getElementById('font-name');
 input.addEventListener('change', onReadFile, false);
 
 function checkFileType() {
@@ -13,17 +12,20 @@ function checkFileType() {
 }
 
 function onReadFile(e) {
-  if (checkFileType()) {
-    console.log("working");
-  }
+  document.getElementById('font-name').innerHTML = '';
   var file = e.target.files[0];
   var reader = new FileReader();
-  reader.onload = function (e) {
-  try {
-    var font = opentype.parse(e.target.result);
-    console.log(font);
-  } catch (err) {
-    console.log("error");
-  }
-};
+  reader.onload = function(e) {
+    try {
+      font = opentype.parse(e.target.result);
+      result = checkfont(font);
+      console.log(result);
+    } catch (err) {
+      alert("Error!")
+    }
+  };
+  reader.onerror = function(err) {
+  };
+
+  reader.readAsArrayBuffer(file);
 }

@@ -13,7 +13,7 @@ const opentype = require('opentype.js');
 //  commander = require('commander');
 
 // Brains
-function checkfont(fontname) {
+function checkfont_node(fontname) {
   var strokeMinimum = 10,
   strokeMaximum = 20,
   bodyMinimum = 60,
@@ -223,6 +223,6 @@ function verboseOutput() {
   return;
 }
 
-checkfont('Fonts/Roboto/Roboto-Regular.ttf');
-checkfont('Fonts/Roboto/Roboto-Black.ttf');
+//checkfont_node('Fonts/Roboto/Roboto-Regular.ttf');
+//checkfont_node('Fonts/Roboto/Roboto-Black.ttf');
 //checkfont('Fonts/Roboto/Roboto-Thin.ttf');
