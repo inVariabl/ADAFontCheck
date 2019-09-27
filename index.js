@@ -19,13 +19,17 @@ function onReadFile(e) {
     try {
       font = opentype.parse(e.target.result);
       result = checkfont(font);
-      console.log(result);
+      document.getElementById("results").innerHTML = JSON.stringify(result);
+      //console.log(result);
     } catch (err) {
-      alert("Error!")
+      alert("Caught Error!")
     }
   };
   reader.onerror = function(err) {
   };
 
   reader.readAsArrayBuffer(file);
+}
+
+function writeOutResults() {
 }

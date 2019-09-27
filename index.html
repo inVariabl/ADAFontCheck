@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <title>ADA Font Checker</title>
   <link rel="stylesheet" href="style.css" media="screen" />
-  <script src="opentype.js" charset="utf-8"></script>
+  <!--script src="opentype.js" charset="utf-8"></script-->
+  <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
 </head>
 <body>
   <div class="body-container">
@@ -14,7 +15,8 @@
   <input id="font-name" type="file">
   <script src="index.js" charset="utf-8"></script>
   <script src="checkfont.js" charset="utf-8"></script>
-  <div class="results"></div>
+  <div id="results">
+  </div>
   </div>
 </body>
 </html>
