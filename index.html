@@ -3,20 +3,30 @@
 <head>
   <meta charset="utf-8">
   <title>ADA Font Checker</title>
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:100i,300i,400,700,900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" media="screen" />
   <!--script src="opentype.js" charset="utf-8"></script-->
   <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
 </head>
 <body>
-  <div class="body-container">
-  <h1>ADA Font Checker</h1>
+    <header id="myHeader">
+      <h1 class="title">ADA Font Checker</h1>
+      <i class="subtitle">Checks if font meets American Disability Association requirements</i>
+  <div class="upload">
   <i>Upload Font:</i>
-  <br>
   <input id="font-name" type="file">
   <script src="index.js" charset="utf-8"></script>
   <script src="checkfont.js" charset="utf-8"></script>
-  <div id="results">
   </div>
+    </header>
+  <br>
+  <div id="results">
+    <div class="pass">
+      <p>Roboto Mono</p>
+    </div>
+    <div class="fail">
+      <p>Roboto Italic</p>
+    </div>
   </div>
 </body>
 </html>

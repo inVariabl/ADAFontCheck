@@ -1,0 +1,53 @@
+body {
+  font-family: 'Montserrat', sans-serif;
+  margin: 0px;
+}
+
+header {
+  height: 100px;
+  width: 100%;
+  background-color: #0c1296;
+  color: #e6e6e6;
+  text-align: center;
+  margin-top: 0px;
+  padding-top: 0px;
+  position: fixed;
+  top: 0;
+}
+
+#font-name {
+  font-weight: 200;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.title {
+  font-weight: 900;
+  font-size: 48px;
+  line-height: 0px;
+  padding: 0px;
+  margin: 30px;
+}
+
+.subtitle {
+  font-weight: 200;
+}
+
+.upload {
+  background-color: #222;
+  border: 1px solid #e6e6e6;
+  margin-top: 10px;
+  padding: 5px;
+  font-size: 15px;
+}
+
+#results {
+  padding-top: 100px;
+}
+
+.pass {
+  background-color: LightGreen;
+}
+
+.fail {
+  background-color: Red;
+}
