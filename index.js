@@ -19,7 +19,18 @@ function onReadFile(e) {
     try {
       font = opentype.parse(e.target.result);
       result = checkfont(font);
-      document.getElementById("results").innerHTML = JSON.stringify(result);
+      document.getElementById("fontname").innerHTML = result.name;
+      if (result.test.ada === true) {
+        document.getElementById("result").innerHTML = "Pass";
+        document.getElementById("fontresult").className = "pass";
+
+      } else if (result.test.ada === false) {
+        document.getElementById("result").innerHTML = "Fail";
+        document.getElementById("fontresult").className = "fail";
+      } else {
+        alert("Error! ADA results error.")
+      }
+      //document.getElementByClassName("raw").innerHTML = JSON.stringify(result);
       //console.log(result);
     } catch (err) {
       alert("Caught Error!")
@@ -29,7 +40,4 @@ function onReadFile(e) {
   };
 
   reader.readAsArrayBuffer(file);
-}
-
-function writeOutResults() {
 }

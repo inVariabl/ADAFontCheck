@@ -40,8 +40,16 @@ header {
   font-size: 15px;
 }
 
-#results {
-  padding-top: 100px;
+.results {
+  padding-top: 105px;
+}
+
+#fontresult {
+  padding: 0% 20% 0% 20%;
+}
+
+.showFont {
+  margin-left: 300px;
 }
 
 .pass {
