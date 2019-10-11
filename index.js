@@ -19,25 +19,28 @@ function onReadFile(e) {
     try {
       font = opentype.parse(e.target.result);
       result = checkfont(font);
-      document.getElementById("fontname").innerHTML = result.name;
-      if (result.test.ada === true) {
-        document.getElementById("result").innerHTML = "Pass";
-        document.getElementById("fontresult").className = "pass";
-
-      } else if (result.test.ada === false) {
-        document.getElementById("result").innerHTML = "Fail";
-        document.getElementById("fontresult").className = "fail";
-      } else {
-        alert("Error! ADA results error.")
-      }
+      displayResults();
       //document.getElementByClassName("raw").innerHTML = JSON.stringify(result);
       //console.log(result);
     } catch (err) {
       alert("Caught Error!")
     }
   };
-  reader.onerror = function(err) {
-  };
+  reader.onerror = function(err) {};
 
   reader.readAsArrayBuffer(file);
+}
+
+function displayResults() {
+
+  function adaresult() {
+    if (result.test.ada) {
+      return ["Pass", "pass"];
+    } else if (result.test.ada === false) {
+      return ["Fail", "fail"];
+    } else {
+      alert("Error! ADA results error.");
+    }
+  }
+  document.getElementById('results').innerHTML += '<div id="fontresult" class='+ adaresult()[1] +'><i id="fontname">' + result.name + '</i><b id="result">' + adaresult()[0] + '</b></div>';
 }
