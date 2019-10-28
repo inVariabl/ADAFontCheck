@@ -157,7 +157,8 @@ function checkfont(fontname) {
   }
 
     var font_details = {
-      name: font_name,
+      //name: font_name,
+      name: font.names.fullName,
       weight: font.names.fontSubfamily.en,
       letter_i: {
         x: i_x_vals_nd,
@@ -194,7 +195,7 @@ function checkfont(fontname) {
         body: bodyTest(),
         ada: adaTest(),
       }
-  }
+  };
 
 function minimalOutput() {
   console.log(font_details.name, font_details.test.ada);

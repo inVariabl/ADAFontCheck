@@ -1,13 +1,16 @@
 body {
   font-family: 'Montserrat', sans-serif;
   margin: 0px;
+  background-color: #1d2021;
 }
 
 header {
   height: 100px;
   width: 100%;
-  background-color: #0c1296;
-  color: #e6e6e6;
+  /*background-color: #0c1296;*/
+  background-color: #076678;
+  /*color: #e6e6e6;*/
+  color: #ebdbb2;
   text-align: center;
   margin-top: 0px;
   padding-top: 0px;
@@ -16,8 +19,9 @@ header {
 }
 
 #font-name {
-  font-weight: 200;
+  font-weight: 400;
   font-family: 'Montserrat', sans-serif;
+  word-wrap: break-word;
 }
 
 .title {
@@ -33,29 +37,36 @@ header {
 }
 
 .upload {
-  background-color: #222;
-  border: 1px solid #e6e6e6;
+  background-color: #282828;
+  border: 1px solid #076678;
   margin-top: 10px;
   padding: 5px;
   font-size: 15px;
 }
 
-#results {
+.results {
   padding-top: 105px;
 }
 
-#fontresult {
-  padding: 0% 20% 0% 20%;
+#fonttable {
+  margin: 1px 0% 0 20%;
+  color: #e6e6e6;
+  width: 60%;
 }
 
-.showFont {
-  margin-left: 300px;
+.tablehead {
+  padding: 5px;
+  color: #e6e6e6;
+  background-color: #282828;
+}
+
+#tableresults {
 }
 
 .pass {
-  background-color: LightGreen;
+  background-color: #98971a;
 }
 
 .fail {
-  background-color: Red;
+  background-color: #cc241d;
 }

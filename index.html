@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <title>ADA Font Checker</title>
@@ -8,23 +9,31 @@
   <!--script src="opentype.js" charset="utf-8"></script-->
   <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
 </head>
+
 <body>
-    <header id="myHeader">
-      <h1 class="title">ADA Font Checker</h1>
-      <i class="subtitle">Checks if font meets American Disability Association requirements</i>
-  <div class="upload">
-  <i>Upload Font:</i>
-  <input id="font-name" type="file">
-  <script src="index.js" charset="utf-8"></script>
-  <script src="checkfont.js" charset="utf-8"></script>
-  </div>
-    </header>
+  <header id="myHeader">
+    <h1 class="title">ADA Font Checker</h1>
+    <i class="subtitle">Checks if font meets American Disability Association requirements</i>
+    <div class="upload">
+      <i>Upload Font:</i>
+      <input id="font-name" type="file" webkitdirectory mozdirectory msdirectory odirectory directory multiple="multiple">
+      <script src="index.js" charset="utf-8"></script>
+      <script src="checkfont.js" charset="utf-8"></script>
+    </div>
+  </header>
   <br>
-  <div id="results">
-    <!--div id="fontresult">
-      <i id="fontname">Font Name</i>
-      <b id="result">Result</b>
-    </div-->
+  <div class="results">
+    <table id="fonttable">
+      <tr class="tablehead">
+        <th>Font Name</th>
+        <th>Test Results</th>
+      </tr>
+      <tr id="tableresults" class="fail">
+        <td>Test Font</td>
+        <td>✔</td>
+      </tr>
+    </table>
   </div>
 </body>
+
 </html>
