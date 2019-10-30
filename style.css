@@ -9,7 +9,7 @@ header {
   width: 100%;
   /*background-color: #0c1296;*/
   background-color: #076678;
-  /*color: #e6e6e6;*/
+  /*color: #ebdbb2;*/
   color: #ebdbb2;
   text-align: center;
   margin-top: 0px;
@@ -50,19 +50,22 @@ header {
 
 #fonttable {
   margin: 1px 0% 0 20%;
-  color: #e6e6e6;
+  color: #ebdbb2;
   width: 60%;
 }
 
 .tablehead {
   padding: 5px;
-  color: #e6e6e6;
+  color: #ebdbb2;
   background-color: #282828;
 }
 
 #tableresults {
 }
 
+.row {
+  padding: 3px;
+}
 .pass {
   background-color: #98971a;
 }

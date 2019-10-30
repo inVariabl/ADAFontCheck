@@ -4,8 +4,12 @@
   "description": "Determine if a font meets ADA requirements",
   "main": "mk1.js",
   "dependencies": {
+    "express": "^4.17.1",
+    "express-fileupload": "^1.1.5",
     "fast-csv": "^2.4.1",
+    "glob": "^7.1.4",
     "opentype.js": "^0.10.0",
+    "package.json": "^2.0.1",
     "path": "^0.12.7"
   },
   "devDependencies": {},

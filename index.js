@@ -21,7 +21,8 @@ function onReadFile(e) {
           }
         }
         //document.getElementById('results').innerHTML += '<div id="fontresult" class=' + adaresult()[1] + '><nobr id="fontname">' + result.name.en + '</nobr><b id="result">' + adaresult()[0] + '</b></div>';
-        document.getElementById('fonttable').innerHTML += '<tr id="tableresults" class=' + adaresult()[1] + '><td>' + result.name.en + '</td><td>' + adaresult()[0] + '</td></tr>';
+        document.getElementById('fonttable').innerHTML += '<tr id="tableresults" class=' + adaresult()[1] + '><td class="row"><a href="#" onclick="moreFontInfo(result.test)">' + ">" + result.name.en + '</a></td><td class="row">' + adaresult()[0] + '</td></tr>';
+
         //displayResults();
       } catch (err) {
         console.log("Caught Error!");
@@ -45,4 +46,9 @@ function displayResults() {
   }
   console.log(adaresult());
   //document.getElementById('results').innerHTML += '<div id="fontresult" class=' + adaresult()[1] + '><i id="fontname">' + input.files[i].name + '</i><b id="result">' + adaresult()[0] + '</b></div>';
+}
+
+function moreFontInfo(information) {
+  console.log("Font Info: " + information);
+  return false;
 }
