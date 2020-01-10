@@ -13,10 +13,11 @@
 <body>
   <header id="myHeader">
     <h1 class="title">ADA Font Checker</h1>
-    <i class="subtitle">Checks if font meets American Disability Association requirements</i>
+    <p class="subtitle">Checks if font meets American Disability Association requirements</p>
     <div class="upload">
-      <i>Upload Font:</i>
+      <!--i>Upload Font:</i-->
       <input id="font-name" type="file" webkitdirectory mozdirectory msdirectory odirectory directory multiple="multiple">
+      <input type="checkbox" id="checkbox"> <i>Passed Only</i>
       <script src="index.js" charset="utf-8"></script>
       <script src="checkfont.js" charset="utf-8"></script>
     </div>
@@ -30,7 +31,7 @@
       </tr>
       <tr id="tableresults" class="fail">
         <td id="name" class="row">> Test Font</a></td>
-        <td id="result" class="row">✔</td>
+        <td id="result" class="row">✘</td>
       </tr>
     </table>
   </div>

@@ -11,17 +11,20 @@ function onReadFile(e) {
       try {
         var font = opentype.parse(e.target.result);
         var result = checkfont(font);
+
         function adaresult() {
           if (result.test.ada) {
             return ["✔", "pass"];
           } else if (result.test.ada === false) {
-            return ["✘", "fail"];
+            if (document.getElementById("checkbox").checked === false) {
+              return ["✘", "fail"];
+            }
           } else {
             alert("Error! ADA results error.");
           }
         }
-        //document.getElementById('results').innerHTML += '<div id="fontresult" class=' + adaresult()[1] + '><nobr id="fontname">' + result.name.en + '</nobr><b id="result">' + adaresult()[0] + '</b></div>';
-        document.getElementById('fonttable').innerHTML += '<tr id="tableresults" class=' + adaresult()[1] + '><td class="row"><a href="#" onclick="moreFontInfo(result.test)">' + ">" + result.name.en + '</a></td><td class="row">' + adaresult()[0] + '</td></tr>';
+
+        document.getElementById('fonttable').innerHTML += '<tr id="tableresults" class=' + adaresult()[1] + '><td class="row"><a href="#" onclick="moreFontInfo(result)">' + " " + result.name.en + '</a></td><td class="row">' + adaresult()[0] + '</td></tr>';
 
         //displayResults();
       } catch (err) {
@@ -34,21 +37,12 @@ function onReadFile(e) {
   }
 }
 
-function displayResults() {
-  function adaresult() {
-    if (result.test.ada) {
-      return ["✔", "pass"];
-    } else if (result.test.ada === false) {
-      return ["✘", "fail"];
-    } else {
-      alert("Error! ADA results error.");
-    }
+function adaresult() {
+  if (result.test.ada) {
+    return ["✔", "pass"];
+  } else if (result.test.ada === false) {
+    return ["✘", "fail"];
+  } else {
+    alert("Error! ADA results error.");
   }
-  console.log(adaresult());
-  //document.getElementById('results').innerHTML += '<div id="fontresult" class=' + adaresult()[1] + '><i id="fontname">' + input.files[i].name + '</i><b id="result">' + adaresult()[0] + '</b></div>';
-}
-
-function moreFontInfo(information) {
-  console.log("Font Info: " + information);
-  return false;
 }
