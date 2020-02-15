@@ -13,8 +13,7 @@ function onReadFolder(e) {
       try {
         var font = opentype.parse(e.target.result);
         var result = checkfont(font);
-
-        document.getElementById('fonttable').innerHTML += '<tr id="tableresults" class=' + adaresult(result.test.ada)[1] + '><td class="row"><a href="#" onclick="moreFontInfo(result)">' + " " + result.name.en + '</a></td><td class="row">' + adaresult(result.test.ada)[0] + '</td></tr>';
+        document.getElementById('fonttable').innerHTML += '<tr id="tableresults" class=' + adaresult(result.test.ada)[1] + '><td class="row">' + " " + result.name.en + '</a></td><td class="row">' + adaresult(result.test.ada)[0] + '</td></tr>';
       } catch (err) {
         console.log("Caught Error!");
         return false;
@@ -35,7 +34,6 @@ function onReadFile(e) {
         var font = opentype.parse(e.target.result);
         var result = checkfont(font);
         document.getElementById('fonttable').innerHTML += '<tr id="tableresults" class=' + adaresult(result.test.ada)[1] + '><td class="row">' + result.name.en + '</a></td><td class="row">' + adaresult(result.test.ada)[0] + '</td></tr> <tr><td>Not Italic</td><td>' + result.test.notitalic + '</td></tr><tr><td>Stroke Test</td><td>' + result.test.stroke + '</td></tr><tr><td>Body Test</td><td>' + result.test.body + '</td></tr><tr><td>Letter I Ratio</td><td>' + result.letter_i.ratio + '</td></tr><tr><td>Letter H Ratio</td><td>' + result.letter_h.ratio + '</td></tr><tr><td>Letter O Ratio</td><td>' + result.letter_o.ratio + '</td></tr>';
-
       } catch (err) {
         console.log("Caught Error!");
         return false;
