@@ -16,22 +16,21 @@
     <p class="subtitle">Checks if font meets American Disability Association requirements</p>
     <div class="upload">
       <!--i>Upload Font:</i-->
-      <input id="font-name" type="file" webkitdirectory mozdirectory msdirectory odirectory directory multiple="multiple">
-      <input type="checkbox" id="checkbox"> <i>Passed Only</i>
+      <i>Folder:</i>
+      <input id="font-name" type="file" webkitdirectory mozdirectory msdirectory odirectory directory multiple="multiple" name="folder"></input>
+      <i>Files:</i>
+      <input id="single-font" type="file" name="file" multiple="multiple"></input>
+      <input type="checkbox" id="checkbox"> <i>Passed Only</i></input>
+      <button id="clear" type="button" onclick="clearFonts();">Clear Fonts</button>
       <script src="index.js" charset="utf-8"></script>
       <script src="checkfont.js" charset="utf-8"></script>
     </div>
   </header>
-  <br>
   <div class="results">
     <table id="fonttable">
       <tr class="tablehead">
         <th>Font Name</th>
         <th>Test Results</th>
-      </tr>
-      <tr id="tableresults" class="fail">
-        <td id="name" class="row">> Test Font</a></td>
-        <td id="result" class="row">✘</td>
       </tr>
     </table>
   </div>

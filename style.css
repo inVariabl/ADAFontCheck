@@ -34,7 +34,7 @@ header {
 
 .subtitle {
   font-weight: 500;
-  font-size: 15px;
+  font-size: 18px;
 }
 
 .upload {
@@ -46,7 +46,7 @@ header {
 }
 
 .results {
-  padding-top: 115px;
+  padding-top: 150px;
 }
 
 #fonttable {
