@@ -46,6 +46,7 @@
         <script src="checkfont.js" charset="utf-8"></script>
       </ul>
   </nav>
+
   <div class="results container">
     <table id="fonttable" class="highlight">
       <thead class="tablehead">
@@ -63,10 +64,6 @@
           <td><b>Example Font 1</b></td>
           <td><i class="material-icons green-text">check_circle</i><b>Pass</b></td>
         </tr>
-        <tr class="green lighten-5">
-          <td><b>Example Font 1</b></td>
-          <td><i class="material-icons green-text">check_circle</i><b>Pass</b></td>
-        </tr>
         <tr class="">
           <td><b>Example Font 2</b></td>
           <td><i class="material-icons red-text">cancel</i><b>Fail</b></td>
@@ -75,24 +72,78 @@
     </table>
   </div>
 
-  <div class="container">
+  <div class="results container">
+    <div id="fonttable" class="highlight">
+      <div class="indigo-text darken-3 row">
+        <div class="col s9">
+          <h5>Font Name</h5>
+        </div>
+        <div class="col s3">
+          <h5>Test Result</h5>
+        </div>
+      </div>
+      <ul class="collapsible expandable">
+        <li>
+          <div class="green lighten-5 row collapsible-header">
+            <div class="col s10"><b>Example Font 1</b></div>
+            <div class="col s2"><i class="material-icons green-text">check_circle</i><b>Pass</b></div>
+          </div>
+        </li>
+        <li>
+          <div class="green lighten-5 row collapsible-body">
+            <div class="col s10"><b>Stroke Width Test </b></div>
+            <div class="col s2"><i class="material-icons green-text">check_circle</i><b>Pass</b></div>
+          </div>
+        </li>
+        <li>
+          <div class="green lighten-5 row collapsible-body">
+            <div class="col s10"><b>Body Width Test </b></div>
+            <div class="col s2"><i class="material-icons green-text">check_circle</i><b>Pass</b></div>
+          </div>
+        </li>
+        <li>
+          <div class="green lighten-5 row collapsible-body ">
+            <div class="col s10"><b>Letter 'H' Ratio</b></div>
+            <div class="col s2"><i class="material-icons green-text">check_circle</i><b>76.1234234%</b></div>
+          </div>
+        </li>
+        <li>
+          <div class="row collapsible-header">
+            <div class="col s10"><b>Example Font 2</b></div>
+            <div class="col s2"><i class="material-icons red-text">cancel</i><b>Fail</b></div>
+          </div>
+        </li>
+      </ul>
+    </div>
+    </table>
+  </div>
 
-    <ul class="collapsible expandable container">
-      <li class="active">
-        <div class="collapsible-header"><i class="material-icons">filter_drama</i>First</div>
-        <div class="collapsible-body"><span>Test fdsajfkdlsajfk </span></div>
-        <div class="collapsible-body"><span>Test fdsajfkdlsajfk </span></div>
-        <div class="collapsible-body"><span>Test fdsajfkdlsajfk </span></div>
-        <div class="collapsible-body"><span>Test fdsajfkdlsajfk </span></div>
+  <div class="container">
+    <ul class="collapsible expandable">
+      <li class="">
+        <div class="collapsible-header row">
+          <div class="col s10">Font</div>
+          <div class="col s2">other</div>
+        </div>
+        <div class="collapsible-body row"><span>Test fdsajfkdlsajfk </span></div>
       </li>
-      <li>
-        <div class="collapsible-header"><i class="material-icons">place</i>Second</div>
-        <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+
+      <li class="">
+        <div class="collapsible-header row">
+          <div class="col s10">Font</div>
+          <div class="col s2">other</div>
+        </div>
+        <div class="collapsible-body row"><span>Test fdsajfkdlsajfk </span></div>
       </li>
-      <li>
-        <div class="collapsible-header"><i class="material-icons">whatshot</i>Third</div>
-        <div class="collapsible-body"><span>Lorem ipsum dolor sit amet.</span></div>
+      <li class="">
+        <div class="collapsible-header row">
+          <div class="col s10">Font</div>
+          <div class="col s2">other</div>
+        </div>
+        <div class="collapsible-body row"><span>Test fdsajfkdlsajfk </span></div>
       </li>
+
+
     </ul>
   </div>
 
