@@ -43,13 +43,13 @@ function checkfont(fontname) {
   }
   function lowestToHighest(array) {
     array.sort(function(a, b) {
-      return a - b
+      return a - b;
     });
   }
   function removeDuplicates(array) {
     return array.filter(function(item, pos) {
       return array.indexOf(item) === pos;
-    })
+    });
   }
 
   function modifyArray(x_vals, y_vals) {
@@ -125,11 +125,11 @@ function checkfont(fontname) {
 
   for (let i = 0; i < letter_o_coor.length; i++) {
     if (letter_o_coor[i].type === 'L') {
-      o_x_vals.push(letter_o_coor[i].x)
-      o_y_vals.push(letter_o_coor[i].y)
+      o_x_vals.push(letter_o_coor[i].x);
+      o_y_vals.push(letter_o_coor[i].y);
     } else if (letter_o_coor[i].type === 'C') {
-      o_x_vals.push(letter_o_coor[i].x)
-      o_y_vals.push(letter_o_coor[i].y)
+      o_x_vals.push(letter_o_coor[i].x);
+      o_y_vals.push(letter_o_coor[i].y);
     }
   }
 
