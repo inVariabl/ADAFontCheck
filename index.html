@@ -9,47 +9,46 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
   <!-- OpenType.js -->
   <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
-  <link rel="stylesheet" href="pretty.css" media="screen" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="pretty.css" media="screen"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </head>
 
 <body>
   <nav class="nav-wrapper blue darken-4 tooltip" data-position="bottom" data-tooltip="Determines if a font meets American Disability Requirements">
     <!--<a href="#" class="brand-logo white-text left"><i class="material-icons white-text">accessible</i><b style="font-weight: 800;" class="">ADA Font Check<a href="#" class="white-text left material-icons">accesible</a></b>-->
     <a href="#" class="brand-logo white-text left">
-      <img src="logo.png" class="brand-logo left" width="400">
+      <img src="logo.png" class="brand-logo left hide-on-med-and-down tooltipped" data-position="bottom" data-tooltip="ADAFontCheck uses opentype.js to analyze font glyphs and determine if the font metrics meet American Disability Association requirements" width="500" style="padding: 10px 10px;">
     </a>
-      <ul class="right">
-        <li>
-          <!-- Switch -->
-          <div class="switch blue-text tooltipped" data-position="bottom" data-tooltip="Display all fonts, or only the passing ones">
-            <label>
-              <b class="white-text">All Fonts</b>
+    <ul class="right">
+      <li>
+        <!-- Switch -->
+        <div class="switch blue-text tooltipped" data-position="bottom" data-tooltip="Display all fonts, or only the passing ones">
+          <label>
+            <b class="white-text">All Fonts</b>
               <input type="checkbox" id="checkbox" class="">
               <span class="lever grey"></span>
-              <b class="white-text">ADA Fonts Only</b>
-            </label>
-          </div>
-        </li>
-        <li>
-          <div class="upload-btn-wrapper">
-            <a class="btn blue lighten-4 black-text z-depth-2 tooltipped" data-position="bottom" data-tooltip="Upload a single font or select multiple fonts">Folder Upload</a>
-            <input id="font-name" type="file" webkitdirectory mozdirectory msdirectory odirectory directory multiple="multiple" name="folder"></input>
-        </li>
+            <b class="white-text">ADA Fonts Only</b>
+          </label>
         </div>
-        </li>
-        <li class="waves-effect tooltipped" data-position="bottom" data-tooltip="Upload a single font or select multiple fonts">
-          <div class="upload-btn-wrapper">
-            <a class="btn blue lighten-4 black-text z-depth-2">File Upload</a>
-            <input id="single-font" type="file" name="file" multiple="multiple"></input>
-          </div>
-        </li>
-        <li>
-          <a id="clear" onclick="clearFonts();" class="btn blue waves-effect tooltipped" data-position="bottom" data-tooltip="Clear All Fonts">Clear<i class="material-icons right">refresh</i></a>
-        </li>
-      </ul>
+      </li>
+      <li class="waves-effect tooltipped" data-position="bottom" data-tooltip="Upload a Folder of TTF/OTF fonts">
+        <div class="upload-btn-wrapper">
+          <a class="btn blue lighten-4 black-text z-depth-2">Folder Upload</a>
+          <input id="font-name" type="file" webkitdirectory mozdirectory msdirectory odirectory directory multiple="multiple" name="folder"></input>
+      </li>
+      </div>
+      </li>
+      <li class="waves-effect tooltipped" data-position="bottom" data-tooltip="Upload a single font or select multiple fonts">
+        <div class="upload-btn-wrapper">
+          <a class="btn blue lighten-4 black-text z-depth-2">File Upload</a>
+          <input id="single-font" type="file" name="file" multiple="multiple"></input>
+        </div>
+      </li>
+      <li>
+        <a id="clear" onclick="clearFonts();" class="btn blue waves-effect tooltipped" data-position="bottom" data-tooltip="Clear All Fonts">Clear<i class="material-icons right">refresh</i></a>
+      </li>
+    </ul>
   </nav>
-
   <div class="container">
     <div class="row indigo-text darken-3 container">
       <h5 class="col s10">Font Name</h5>
@@ -118,7 +117,6 @@
       </li>
     </ul>
   </div>
-
   <!-- Compiled and minified JavaScript -->
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
@@ -135,12 +133,8 @@
       $('.tooltipped').tooltip();
     });
   </script>
-        <script src="index.js" charset="utf-8"></script>
-        <script src="checkfont.js" charset="utf-8"></script>
-
+  <script src="index.js" charset="utf-8"></script>
+  <script src="checkfont.js" charset="utf-8"></script>
 </body>
-
-
-
 
 </html>
