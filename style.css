@@ -1,77 +1,25 @@
-body {
-  font-family: 'Montserrat', sans-serif;
-  margin: 0px;
-  background-color: #1d2021;
+.upload-btn-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
 }
 
-header {
-  height: 100px;
-  width: 100%;
-  /*background-color: #0c1296;*/
-  background-color: #076678;
-  /*color: #ebdbb2;*/
-  color: #ebdbb2;
-  text-align: center;
-  margin-top: 0px;
-  padding-top: 0px;
-  position: fixed;
+.upload-btn-wrapper input[type=file] {
+  font-size: 100px;
+  position: absolute;
+  left: 0;
   top: 0;
+  opacity: 0;
 }
 
-#font-name {
-  font-weight: 400;
-  font-family: 'Montserrat', sans-serif;
-  word-wrap: break-word;
+/* Sticky Footer */
+
+body {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
 }
 
-.title {
-  font-weight: 900;
-  font-size: 48px;
-  line-height: 0px;
-  padding: 0px;
-  margin: 30px;
-}
-
-.subtitle {
-  font-weight: 500;
-  font-size: 18px;
-}
-
-.upload {
-  background-color: #282828;
-  border: 1px solid #076678;
-  margin-top: 10px;
-  padding: 5px;
-  font-size: 15px;
-}
-
-.results {
-  padding-top: 150px;
-  padding-bottom: 150px;
-}
-
-#fonttable {
-  margin: 1px 0% 0 15%;
-  color: #ebdbb2;
-  width: 70%;
-}
-
-.tablehead {
-  padding: 5px;
-  color: #ebdbb2;
-  background-color: #282828;
-}
-
-#tableresults {}
-
-.row {
-  padding: 3px;
-}
-
-.pass {
-  background-color: #98971a;
-}
-
-.fail {
-  background-color: #cc241d;
+main {
+  flex: 1 0 auto;
 }

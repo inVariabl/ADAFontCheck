@@ -9,114 +9,147 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
   <!-- OpenType.js -->
   <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
-  <link rel="stylesheet" href="pretty.css" media="screen"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="style.css" media="screen" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
 
 <body>
-  <nav class="nav-wrapper blue darken-4 tooltip" data-position="bottom" data-tooltip="Determines if a font meets American Disability Requirements">
-    <!--<a href="#" class="brand-logo white-text left"><i class="material-icons white-text">accessible</i><b style="font-weight: 800;" class="">ADA Font Check<a href="#" class="white-text left material-icons">accesible</a></b>-->
-    <a href="#" class="brand-logo white-text left">
-      <img src="logo.png" class="brand-logo left hide-on-med-and-down tooltipped" data-position="bottom" data-tooltip="ADAFontCheck uses opentype.js to analyze font glyphs and determine if the font metrics meet American Disability Association requirements" width="500" style="padding: 10px 10px;">
-    </a>
-    <ul class="right">
-      <li>
-        <!-- Switch -->
-        <div class="switch blue-text tooltipped" data-position="bottom" data-tooltip="Display all fonts, or only the passing ones">
-          <label>
-            <b class="white-text">All Fonts</b>
+  <header>
+    <nav class="nav-wrapper blue darken-4 tooltip" data-position="bottom" data-tooltip="Determines if a font meets American Disability Requirements">
+      <!--<a href="#" class="brand-logo white-text left"><i class="material-icons white-text">accessible</i><b style="font-weight: 800;" class="">ADA Font Check<a href="#" class="white-text left material-icons">accesible</a></b>-->
+      <a href="#" class="brand-logo white-text left">
+        <img src="media/logo.png" class="brand-logo left hide-on-med-and-down tooltipped" data-position="bottom"
+          data-tooltip="ADAFontCheck uses opentype.js to analyze font glyphs and determine if the font metrics meet American Disability Association requirements" width="500" style="padding: 10px 10px;">
+      </a>
+      <ul class="right">
+        <li>
+          <!-- Switch -->
+          <div class="switch blue-text tooltipped" data-position="bottom" data-tooltip="Display all fonts, or only the passing ones">
+            <label>
+              <b class="white-text">All Fonts</b>
               <input type="checkbox" id="checkbox" class="">
               <span class="lever grey"></span>
-            <b class="white-text">ADA Fonts Only</b>
-          </label>
+              <b class="white-text">ADA Fonts Only</b>
+            </label>
+          </div>
+        </li>
+        <li class="waves-effect tooltipped" data-position="bottom" data-tooltip="Upload a Folder of TTF/OTF fonts">
+          <div class="upload-btn-wrapper">
+            <a class="btn blue lighten-4 black-text z-depth-2">Folder Upload</a>
+            <input id="font-name" type="file" webkitdirectory mozdirectory msdirectory odirectory directory multiple="multiple" name="folder"></input>
+        </li>
         </div>
-      </li>
-      <li class="waves-effect tooltipped" data-position="bottom" data-tooltip="Upload a Folder of TTF/OTF fonts">
-        <div class="upload-btn-wrapper">
-          <a class="btn blue lighten-4 black-text z-depth-2">Folder Upload</a>
-          <input id="font-name" type="file" webkitdirectory mozdirectory msdirectory odirectory directory multiple="multiple" name="folder"></input>
-      </li>
+        </li>
+        <li class="waves-effect tooltipped" data-position="bottom" data-tooltip="Upload a single font or select multiple fonts">
+          <div class="upload-btn-wrapper">
+            <a class="btn blue lighten-4 black-text z-depth-2">File Upload</a>
+            <input id="single-font" type="file" name="file" multiple="multiple"></input>
+          </div>
+        </li>
+        <li>
+          <a id="clear" onclick="clearFonts();" class="btn blue waves-effect tooltipped" data-position="bottom" data-tooltip="Clear All Fonts">Clear<i class="material-icons right">refresh</i></a>
+        </li>
+      </ul>
+    </nav>
+
+  </header>
+  <main>
+    <div class="container">
+      <div class="row indigo-text darken-3 container">
+        <h5 class="col s10">Font Name</h5>
+        <h5 class="col s2">Test Result</h5>
       </div>
-      </li>
-      <li class="waves-effect tooltipped" data-position="bottom" data-tooltip="Upload a single font or select multiple fonts">
-        <div class="upload-btn-wrapper">
-          <a class="btn blue lighten-4 black-text z-depth-2">File Upload</a>
-          <input id="single-font" type="file" name="file" multiple="multiple"></input>
-        </div>
-      </li>
-      <li>
-        <a id="clear" onclick="clearFonts();" class="btn blue waves-effect tooltipped" data-position="bottom" data-tooltip="Clear All Fonts">Clear<i class="material-icons right">refresh</i></a>
-      </li>
-    </ul>
-  </nav>
-  <div class="container">
-    <div class="row indigo-text darken-3 container">
-      <h5 class="col s10">Font Name</h5>
-      <h5 class="col s2">Test Result</h5>
+      <ul class="collapsible popout" id="displayresults">
+        <li>
+          <div class="collapsible-header row green lighten-5">
+            <div class="col s11"><b>Example Font 1</b></div>
+            <div class="col s1"><i class="material-icons green-text tooltipped" data-position="bottom" data-tooltip="Meets ADA Requirements">check_circle</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Not Italic Test</div>
+            <div class="col s1"><i class="material-icons green-text">check_circle</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Stroke Width Test</div>
+            <div class="col s1"><i class="material-icons green-text">check_circle</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Body Width Test</div>
+            <div class="col s1"><i class="material-icons green-text">check_circle</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Letter 'I' Ratio</div>
+            <div class="col s1">10-20%</div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Letter 'H' Ratio</div>
+            <div class="col s1">60-100%</div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Letter 'O' Ratio</div>
+            <div class="col s1">60-100%</div>
+          </div>
+        </li>
+        <li>
+          <div class="collapsible-header row">
+            <div class="col s11"><b>Example Font 2</b></div>
+            <div class="col s1"><i class="material-icons red-text tooltipped" data-position="bottom" data-tooltip="Doesn't Meet ADA Requirements">cancel</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Not Italic Test</div>
+            <div class="col s1"><i class="material-icons red-text">cancel</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Stroke Width Test</div>
+            <div class="col s1"><i class="material-icons red-text">cancel</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Body Width Test</div>
+            <div class="col s1"><i class="material-icons red-text">cancel</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Letter 'I' Ratio</div>
+            <div class="col s1">30%</div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Letter 'H' Ratio</div>
+            <div class="col s1">50%</div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Letter 'O' Ratio</div>
+            <div class="col s1">40%</div>
+          </div>
+        </li>
+      </ul>
     </div>
-    <ul class="collapsible popout" id="displayresults">
-      <li>
-        <div class="collapsible-header row green lighten-5">
-          <div class="col s11"><b>Example Font 1</b></div>
-          <div class="col s1"><i class="material-icons green-text tooltipped" data-position="bottom" data-tooltip="Meets ADA Requirements">check_circle</i></div>
+  </main>
+  <footer class="page-footer blue darken-4">
+    <div class="container">
+      <div class="row">
+        <div class="col l6 s12">
+          <h5 class="white-text"><b>ADA Font Check</b></h5>
+          <p class="grey-text text-lighten-4">Determines if a font meets American Disability Association standards using <a href="https://opentype.js.org/">opentype.js</a>.</p>
         </div>
-        <div class="collapsible-body row"><span></span>
-          <div class="col s11">Not Italic Test</div>
-          <div class="col s1"><i class="material-icons green-text">check_circle</i></div>
+        <div class="col l4 offset-l2 s12">
+          <h5 class="white-text">Links</h5>
+          <ul>
+            <li><a class="grey-text text-lighten-3" href=""><i class="material-icons">info</i> - About</a></li>
+            <li><a class="grey-text text-lighten-3" href="https://www.paypal.com/paypalme2/danielcrooks"><i class="material-icons">monetization_on</i> - Donate</a></li>
+            <li><a class="grey-text text-lighten-3" href="https://github.com/inVariabl/ADAFontCheck"><i class="material-icons">code</i> - Github</a></li>
+          </ul>
         </div>
-        <div class="collapsible-body row"><span></span>
-          <div class="col s11">Stroke Width Test</div>
-          <div class="col s1"><i class="material-icons green-text">check_circle</i></div>
-        </div>
-        <div class="collapsible-body row"><span></span>
-          <div class="col s11">Body Width Test</div>
-          <div class="col s1"><i class="material-icons green-text">check_circle</i></div>
-        </div>
-        <div class="collapsible-body row"><span></span>
-          <div class="col s11">Letter 'I' Ratio</div>
-          <div class="col s1"><i class="material-icons green-text">check_circle</i></div>
-        </div>
-        <div class="collapsible-body row"><span></span>
-          <div class="col s11">Letter 'H' Ratio</div>
-          <div class="col s1"><i class="material-icons green-text">check_circle</i></div>
-        </div>
-        <div class="collapsible-body row"><span></span>
-          <div class="col s11">Letter 'O' Ratio</div>
-          <div class="col s1"><i class="material-icons green-text">check_circle</i></div>
-        </div>
-      </li>
-      <li>
-        <div class="collapsible-header row">
-          <div class="col s11"><b>Example Font 2</b></div>
-          <div class="col s1"><i class="material-icons red-text tooltipped" data-position="bottom" data-tooltip="Doesn't Meet ADA Requirements">cancel</i></div>
-        </div>
-        <div class="collapsible-body row"><span></span>
-          <div class="col s11">Not Italic Test</div>
-          <div class="col s1"><i class="material-icons red-text">cancel</i></div>
-        </div>
-        <div class="collapsible-body row"><span></span>
-          <div class="col s11">Stroke Width Test</div>
-          <div class="col s1"><i class="material-icons red-text">cancel</i></div>
-        </div>
-        <div class="collapsible-body row"><span></span>
-          <div class="col s11">Body Width Test</div>
-          <div class="col s1"><i class="material-icons red-text">cancel</i></div>
-        </div>
-        <div class="collapsible-body row"><span></span>
-          <div class="col s11">Letter 'I' Ratio</div>
-          <div class="col s1"><i class="material-icons red-text">cancel</i></div>
-        </div>
-        <div class="collapsible-body row"><span></span>
-          <div class="col s11">Letter 'H' Ratio</div>
-          <div class="col s1"><i class="material-icons red-text">cancel</i></div>
-        </div>
-        <div class="collapsible-body row"><span></span>
-          <div class="col s11">Letter 'O' Ratio</div>
-          <div class="col s1"><i class="material-icons red-text">cancel</i></div>
-        </div>
-      </li>
-    </ul>
-  </div>
+      </div>
+    </div>
+    <div class="footer-copyright">
+      <div class="container">
+        <a href="http://crooksdesign.com/">
+        © 2020 Crooks Design, INC
+        </a>
+        <a class="grey-text text-lighten-4 right" href="#!">More Links</a>
+      </div>
+    </div>
+  </footer>
+
   <!-- Compiled and minified JavaScript -->
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>

@@ -1,12 +1,7 @@
-console.log("Starting ADA Font Check...");
 var folder = document.querySelector('input[name="folder"]');
 var file = document.querySelector('input[name="file"]');
-if (folder) {
-  folder.addEventListener('change', onReadFolder, false);
-}
-if (file) {
-  file.addEventListener('change', onReadFolder, false);
-}
+if (folder) { folder.addEventListener('change', onReadFolder, false); }
+if (file) { file.addEventListener('change', onReadFolder, false); }
 
 function onReadFolder(e) {
   clearFonts();
@@ -30,12 +25,10 @@ function onReadFolder(e) {
 }
 
 function adaresult(result) {
-  if (result) {
-    //return ["✔", "pass"];
+  if (result) { // Pass
     return ["<i class='material-icons green-text tooltipped' data-position='bottom' data-tooltip='Meets ADA Requirements'>check_circle</i>", 'green lighten-5'];
-  } else if (result === false) {
+  } else if (result === false) { // Fail
     if (document.getElementById("checkbox").checked === false) {
-      //return ["✘", "fail"];
       return ["<i class='material-icons red-text tooltipped' data-position='bottom' data-tooltip='Does not meet ADA Requirements'>cancel</i>", ''];
     }
   } else {
@@ -44,9 +37,9 @@ function adaresult(result) {
 }
 
 function test(testName) {
-  if (testName) {
+  if (testName) { // Pass
     return ["<i class='material-icons green-text'>check_circle</i>"];
-  } else {
+  } else { // Fail
     return ["<i class='material-icons red-text'>cancel</i>"];
   }
 }
