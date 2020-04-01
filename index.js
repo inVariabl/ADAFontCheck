@@ -44,7 +44,6 @@ function test(testName) {
   }
 }
 
-
 function clearFonts() {
   console.log("Clearing Fonts");
   document.getElementById('displayresults').innerHTML = "";
