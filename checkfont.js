@@ -2,14 +2,13 @@
 // Created by Daniel Crooks
 // github.com/inVariabl/ADAFontCheck
 
-function checkfont(fontname) {
-  var strokeMinimum = 10,
+function checkfont(font) {
+  let strokeMinimum = 10,
   strokeMaximum = 20,
   bodyMinimum = 60,
   bodyMaximum = 100;
 
-  var font = fontname;
-  var font_name = font.names.fontFamily.en;
+  //let font_name = font.names.fontFamily.en;
 
   // Tests
   // Pre-Requisites
@@ -196,10 +195,6 @@ function checkfont(fontname) {
         ada: adaTest(),
       }
   };
-
-function minimalOutput() {
-  console.log(font_details.name, font_details.test.ada);
-}
+  
   return font_details;
-//verboseOutput();
 }
