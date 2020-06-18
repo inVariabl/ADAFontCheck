@@ -3,12 +3,10 @@
 // github.com/inVariabl/ADAFontCheck
 
 function checkfont(font) {
-  let strokeMinimum = 10,
+  const strokeMinimum = 10,
   strokeMaximum = 20,
   bodyMinimum = 60,
   bodyMaximum = 100;
-
-  //let font_name = font.names.fontFamily.en;
 
   // Tests
   // Pre-Requisites
@@ -114,9 +112,7 @@ function checkfont(font) {
     var sanserifTest = false; // Font is Serif
   }
 
-  /* letter O */
-  // TTF = 'L'
-  // OTF = 'C'
+  /* letter O */ // TTF = 'L', OTF = 'C'
   var letter_o_coor = font.getPath('O', 0, 150, 72).commands;
   getGlyphs('O');
   var o_x_vals = [];
@@ -156,7 +152,6 @@ function checkfont(font) {
   }
 
     var font_details = {
-      //name: font_name,
       name: font.names.fullName,
       weight: font.names.fontSubfamily.en,
       letter_i: {
@@ -195,6 +190,6 @@ function checkfont(font) {
         ada: adaTest(),
       }
   };
-  
+
   return font_details;
 }
