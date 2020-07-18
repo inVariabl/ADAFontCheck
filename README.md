@@ -2,6 +2,7 @@
 ADAFontCheck uses [opentype.js](opentype.js.org) to [analyze font glyphs](opentype.js.org/glyph-inspector.html) and determine if the font metrics meet American Disability Association requirements.
 
 ## Try It Out! - [Demo Link](https://invariabl.github.io/ADAFontCheck/)
+## We've Moved -> [adafontcheck.xyz](https://adafontcheck.xyz/)
 
 ![](media/overview.png)
 *View Fonts at a glance*
@@ -10,10 +11,10 @@ ADAFontCheck uses [opentype.js](opentype.js.org) to [analyze font glyphs](openty
 *Verbose view*
 
 ### ADA Requirements
-#### 1. Stroke Width Ratio: **10% - 20%**
-#### 2. Body Width Ratio: **60% - 100%**
-#### 3. No Italic Fonts
-#### 4. No San Serif
+1. Stroke Width Ratio: **10% - 20%**
+2. Body Width Ratio: **60% - 100%**
+3. No Italic Fonts
+4. No San Serif
 
 ## How it Works
 ADAFontCheck uses the letters "I", "H", and "O" to determine the Stroke Width Ratio and Body Width Ratio.
