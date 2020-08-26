@@ -56,8 +56,8 @@
   <main>
     <div class="container">
       <div class="row indigo-text darken-3 container">
-        <h5 class="col s10">Font Name</h5>
-        <h5 class="col s2">Test Result</h5>
+        <div class="col s8"><h5>Font Name</h5></div>
+        <div class="col s4"><h5>Test Result</h5></div>
       </div>
       <ul class="collapsible popout" id="displayresults">
         <li>
@@ -128,14 +128,14 @@
       <div class="row">
         <div class="col l6 s12">
           <h5 class="white-text"><b>ADA Font Check</b></h5>
-          <p class="grey-text text-lighten-4">Determines if a font meets the ADA Accessiblity Guidelines (ADAAG) using <a href="https://opentype.js.org/">opentype.js</a>.</p>
+          <p class="grey-text text-lighten-4">Determines if a font meets the ADA Accessiblity Guidelines (ADAAG) for tactile signage using <a class="blue-text text-lighten-4" href="https://opentype.js.org/">opentype.js</a>.</p>
 <p>
 <b>Tests</b>
   <ol>
     <li>Character Stroke Width ratio of 10%–20% using the uppercase letters “I,” “H,” and “O”.</li>
     <li>Character Body Width ratio of 60%–100% using the uppercase letters “I,” “H,” and “O”.</li>
-	  <li>Italic Font determination.</li>
-	  <li>Serif Font determination.</li>
+	  <li>Italic Font detection.</li>
+	  <li>Serif Font detection.</li>
 	  <li>Sans Serif Font determination.</li>
   </ol>
 
@@ -145,8 +145,7 @@
 		<li>Select “Folder Upload” button for multiple fonts or “File Upload” button for a single font. </li>
 		<li>Navigate to the source file in your fonts library. </li>
 		<li>Select the fonts. </li>
-		<li>Review the test results by clicking on the font name. </li>
-		<li>Print or Save a report. </li>
+    <li>Review the test results by clicking on the font name. <i>Note that results appear for Sans Serif fonts only. Fonts that are not Sans Serif do not comply with ADA requirements.</i></li>
 </ol>
 
 <b>Notes</b>
@@ -166,20 +165,14 @@
 
 </p>
         </div>
-        <div class="col l4 offset-l2 s12">
-          <h5 class="white-text">Links</h5>
-          <ul>
-            <!--><li><a class="grey-text text-lighten-3" href=""><i class="material-icons">info</i> - About</a></li><-->
-            <li><a class="grey-text text-lighten-3" href="https://www.paypal.com/paypalme2/danielcrooks"><i class="material-icons">monetization_on</i> - Donate</a></li>
-            <li><a class="grey-text text-lighten-3" href="https://github.com/inVariabl/ADAFontCheck"><i class="material-icons">code</i> - Github</a></li>
-          </ul>
-        </div>
       </div>
     </div>
     <div class="footer-copyright">
       <div class="container">
-        <a href="http://crooksdesign.com/"> © 2020 Crooks Design • Made in USA </a>
-        <a class="grey-text text-lighten-4 right" href="#!">More Links</a>
+        <a class="blue-text text-lighten-4" href="http://crooksdesign.com/"> © 2020 Crooks Design • Made in USA </a>
+        <a class="blue-text text-lighten-4 right" href="https://www.paypal.com/paypalme2/danielcrooks">Donate</a>
+        <a class="gray-text text-lighten-4 right" href="#"></a>
+        <a class="blue-text text-lighten-4 right" href="https://github.com/inVariabl/ADAFontCheck">Github</a>
       </div>
     </div>
   </footer>

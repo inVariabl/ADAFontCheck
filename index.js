@@ -46,5 +46,66 @@ function test(testName) {
 
 function clearFonts() {
   console.log("Clearing Fonts");
-  document.getElementById('displayresults').innerHTML = "";
+  document.getElementById('displayresults').innerHTML = `
+        <li>
+          <div class="collapsible-header row green lighten-5">
+            <div class="col s11"><b>Example Font 1</b></div>
+            <div class="col s1"><i class="material-icons green-text tooltipped" data-position="bottom" data-tooltip="Meets ADA Requirements">check_circle</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Not Italic Test</div>
+            <div class="col s1"><i class="material-icons green-text">check_circle</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Stroke Width Test</div>
+            <div class="col s1"><i class="material-icons green-text">check_circle</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Body Width Test</div>
+            <div class="col s1"><i class="material-icons green-text">check_circle</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Letter 'I' Ratio</div>
+            <div class="col s1">10-20%</div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Letter 'H' Ratio</div>
+            <div class="col s1">60-100%</div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Letter 'O' Ratio</div>
+            <div class="col s1">60-100%</div>
+          </div>
+        </li>
+        <li>
+          <div class="collapsible-header row">
+            <div class="col s11"><b>Example Font 2</b></div>
+            <div class="col s1"><i class="material-icons red-text tooltipped" data-position="bottom" data-tooltip="Doesn't Meet ADA Requirements">cancel</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Not Italic Test</div>
+            <div class="col s1"><i class="material-icons red-text">cancel</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Stroke Width Test</div>
+            <div class="col s1"><i class="material-icons red-text">cancel</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Body Width Test</div>
+            <div class="col s1"><i class="material-icons red-text">cancel</i></div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Letter 'I' Ratio</div>
+            <div class="col s1">30%</div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Letter 'H' Ratio</div>
+            <div class="col s1">50%</div>
+          </div>
+          <div class="collapsible-body row"><span></span>
+            <div class="col s11">Letter 'O' Ratio</div>
+            <div class="col s1">40%</div>
+          </div>
+        </li>
+`;
 }
