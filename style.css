@@ -12,6 +12,15 @@
   opacity: 0;
 }
 
+.switch label input[type=checkbox]:checked + .lever:after {
+  /*background-color: #0D47A1;*/
+  background-color: #2196F3;
+}
+.switch label input[type=checkbox]:checked + .lever {
+  background-color: grey;
+}
+
+
 /* Sticky Footer */
 
 body {

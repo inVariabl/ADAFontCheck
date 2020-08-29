@@ -14,9 +14,9 @@
 </head>
 
 <body>
-  <header>
-    <nav class="nav-wrapper blue darken-4 tooltip" data-position="bottom" data-tooltip="Determines if a font meets American Disability Requirements">
-      <!--<a href="#" class="brand-logo white-text left"><i class="material-icons white-text">accessible</i><b style="font-weight: 800;" class="">ADA Font Check<a href="#" class="white-text left material-icons">accesible</a></b>-->
+  <div class="navbar-fixed">
+      <nav>
+    <div class="nav-wrapper z-depth-3 blue darken-4 tooltip" data-position="bottom" data-tooltip="Determines if a font meets American Disability Requirements">
       <a href="#" class="brand-logo white-text left">
         <img src="media/logo.png" class="brand-logo left hide-on-med-and-down tooltipped" data-position="bottom"
           data-tooltip="ADAFontCheck uses opentype.js to analyze font glyphs and determine if the font metrics meet American Disability Association requirements" width="500" style="padding: 10px 10px;">
@@ -24,25 +24,24 @@
       <ul class="right">
         <li>
           <!-- Switch -->
-          <div class="switch blue-text tooltipped" data-position="bottom" data-tooltip="Display all fonts, or only the passing ones">
-            <label>
-              <b class="white-text">All Fonts</b>
+          <div class="switch tooltipped" data-position="bottom" data-tooltip="Display all fonts or only the passing ones">
+            <label class="white-text">
+              <b class="show-on-small">All</b><b class="hide-on-med-and-down"> Fonts</b>
               <input type="checkbox" id="checkbox" class="">
-              <span class="lever grey"></span>
-              <b class="white-text">ADA Fonts Only</b>
+              <span class="lever"></span>
+              <b class="show-on-small">ADA</b><b class="hide-on-med-and-down"> Fonts Only</b>
             </label>
           </div>
         </li>
-        <li class="waves-effect tooltipped" data-position="bottom" data-tooltip="Upload a Folder of TTF/OTF fonts">
-          <div class="upload-btn-wrapper">
-            <a class="btn blue lighten-4 black-text z-depth-2">Folder Upload</a>
-            <input id="font-name" type="file" webkitdirectory mozdirectory msdirectory odirectory directory multiple="multiple" name="folder"></input>
+        <li class="">
+          <div class="upload-btn-wrapper tooltipped" data-position="bottom" data-tooltip="Upload a Folder of TTF/OTF fonts">
+              <a class="btn blue lighten-4 black-text z-depth-2">Folder Upload</a>
+            <input id="font-name" type="file" webkitdirectory mozdirectory msdirectory odirectory directory name="folder" multiple="multiple"></input>
+          </div>
         </li>
-        </div>
-        </li>
-        <li class="waves-effect tooltipped" data-position="bottom" data-tooltip="Upload a single font or select multiple fonts">
-          <div class="upload-btn-wrapper">
-            <a class="btn blue lighten-4 black-text z-depth-2">File Upload</a>
+        <li class="">
+          <div class="upload-btn-wrapper tooltipped" data-position="bottom" data-tooltip="Upload a single font or select multiple fonts">
+              <a class="btn blue lighten-4 black-text z-depth-2">File Upload</a>
             <input id="single-font" type="file" name="file" multiple="multiple"></input>
           </div>
         </li>
@@ -50,9 +49,10 @@
           <a id="clear" onclick="clearFonts();" class="btn blue waves-effect tooltipped" data-position="bottom" data-tooltip="Clear All Fonts">Clear<i class="material-icons right">refresh</i></a>
         </li>
       </ul>
+    </div>
     </nav>
+  </div>
 
-  </header>
   <main>
     <div class="container">
       <div class="row indigo-text darken-3 container">
@@ -126,7 +126,7 @@
   <footer class="page-footer blue darken-4">
     <div class="container">
       <div class="row">
-        <div class="col l6 s12">
+        <div class="col s12">
           <h5 class="white-text"><b>ADA Font Check</b></h5>
           <p class="grey-text text-lighten-4">Determines if a font meets the ADA Accessiblity Guidelines (ADAAG) for tactile signage using <a class="blue-text text-lighten-4" href="https://opentype.js.org/">opentype.js</a>.</p>
 <p>
@@ -168,11 +168,10 @@
       </div>
     </div>
     <div class="footer-copyright">
-      <div class="container">
-        <a class="blue-text text-lighten-4" href="http://crooksdesign.com/"> © 2020 Crooks Design • Made in USA </a>
-        <a class="blue-text text-lighten-4 right" href="https://www.paypal.com/paypalme2/danielcrooks">Donate</a>
-        <a class="gray-text text-lighten-4 right" href="#"></a>
-        <a class="blue-text text-lighten-4 right" href="https://github.com/inVariabl/ADAFontCheck">Github</a>
+      <div class="container row">
+        <a class="blue-text text-lighten-4 col s10" href="http://crooksdesign.com/">ADA FONT CHECK™ • Crooks Design © 2020 • Made in USA </a>
+        <a class="blue-text text-lighten-4 right col s1" href="https://www.paypal.com/paypalme2/danielcrooks">Donate</a>
+        <a class="blue-text text-lighten-4 right col s1" href="https://github.com/inVariabl/ADAFontCheck">Github</a>
       </div>
     </div>
   </footer>
