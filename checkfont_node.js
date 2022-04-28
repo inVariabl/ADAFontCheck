@@ -14,8 +14,8 @@ const opentype = require('opentype.js');
 
 // Brains
 function checkfont_node(fontname) {
-  var strokeMinimum = 10,
-  strokeMaximum = 20,
+  var strokeMinimum = 0,
+  strokeMaximum = 15,
   bodyMinimum = 60,
   bodyMaximum = 100;
 

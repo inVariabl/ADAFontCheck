@@ -79,7 +79,7 @@
           </div>
           <div class="collapsible-body row"><span></span>
             <div class="col s11">Letter 'I' Ratio</div>
-            <div class="col s1">10-20%</div>
+            <div class="col s1">10-15%</div>
           </div>
           <div class="collapsible-body row"><span></span>
             <div class="col s11">Letter 'H' Ratio</div>
@@ -132,8 +132,8 @@
 <p>
 <b>Tests</b>
   <ol>
-    <li>Character Stroke Width ratio of 10%–20% using the uppercase letters “I,” “H,” and “O”.</li>
-    <li>Character Body Width ratio of 60%–100% using the uppercase letters “I,” “H,” and “O”.</li>
+    <li>Character Stroke Width ratio with a maximum of 15% using the uppercase letter 'I'.</li>
+    <li>Character Body Width ratio of 60%–110% using the uppercase letters 'I,' 'H,' and 'O'.</li>
 	  <li>Italic Font detection.</li>
 	  <li>Serif Font detection.</li>
 	  <li>Sans Serif Font determination.</li>
@@ -157,7 +157,7 @@
 
 <b>Disclaimers</b>
 <ol>
-  <li>This service is more stringent than California Building Standards Code 11B-703 for character proportion ratios requiring 60%–110%. </li>
+  <li>This service is based on California Building Standards Code 11B-703 for character proportion ratios. </li>
   <li>ADA FONT CHECK is not endorsed by the United States Access Board or anyone else. </li>
   <li>The owners of ADA FONT CHECK assume no liability or responsibility whatsoever for any direct, indirect, special, or other consequential damages relating to any use of this online service or the contents of this website. </li>
   <li>Use at your own discretion. </li>
@@ -169,8 +169,27 @@
     </div>
     <div class="footer-copyright">
       <div class="container row">
-        <a class="blue-text text-lighten-4 col s10" href="http://crooksdesign.com/">ADA FONT CHECK™ • Crooks Design © 2020 • Made in USA </a>
+        <a class="blue-text text-lighten-4 col s10" href="http://crooksdesign.com/">ADA FONT CHECK™ • Crooks Design © 2022 • Made in USA </a>
         <a class="blue-text text-lighten-4 right col s1" href="https://github.com/inVariabl/ADAFontCheck">Github</a>
+        <a class="blue-text text-lighten-4 right col s1 modal-trigger" href="#donate">Donate</a>
+
+        <!-- Modal Structure -->
+        <div id="donate" class="modal">
+          <div class="modal-content">
+            <h5 class="black-text">Support ADAFontCheck!</h5>
+            <i class="grey-text">Our website also supports OpenAlias, simply type "adafontcheck.xyz" into a supported crypto wallet.</i>
+            <p class="black-text">Bitcoin (BTC): </p>
+            <code class="black-text">bc1qpwjvycfhvz6gjrqv0nghkh3sal804tg0cfjew9</code>
+            <p class="black-text">Monero (XMR): </p>
+            <code class="black-text">471huRTWJjZ1PRkza3egnYenXNyfQ7A1wbckmsEdk2zZYNbtiJ5nSHyfU6kuyZtWLQKiWFxouD3S3MkrypJTmKb7DE64xtM</code>
+            <br>
+
+          </div>
+          <div class="modal-footer">
+            <a class="modal-close waves-effect waves-green btn-flat">Thanks!</a>
+          </div>
+        </div>
+
       </div>
     </div>
   </footer>
@@ -189,6 +208,7 @@
     });
     $(document).ready(function() {
       $('.tooltipped').tooltip();
+      $('.modal').modal();
     });
   </script>
   <script src="index.js" charset="utf-8"></script>
