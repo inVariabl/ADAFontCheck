@@ -10,7 +10,7 @@ ADAFontCheck uses [opentype.js](opentype.js.org) to [analyze font glyphs](openty
 *Verbose view*
 
 ### ADA Requirements
-1. Stroke Width Ratio: **0% - 15%** _(Updated to comply with stricter California Guidelines)_
+1. Stroke Width Ratio: **10% - 15%** _(Updated to comply with stricter California Guidelines)_
 2. Body Width Ratio: **60% - 100%**
 3. No Italic Fonts
 4. No San Serif

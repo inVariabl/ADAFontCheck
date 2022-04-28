@@ -66,7 +66,7 @@ function clearFonts() {
           </div>
           <div class="collapsible-body row"><span></span>
             <div class="col s11">Letter 'I' Ratio</div>
-            <div class="col s1">10-20%</div>
+            <div class="col s1">10-15%</div>
           </div>
           <div class="collapsible-body row"><span></span>
             <div class="col s11">Letter 'H' Ratio</div>

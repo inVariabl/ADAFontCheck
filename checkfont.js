@@ -3,7 +3,7 @@
 // github.com/inVariabl/ADAFontCheck
 
 function checkfont(font) {
-  const strokeMinimum = 0,
+  const strokeMinimum = 10,
   strokeMaximum = 15,
   bodyMinimum = 60,
   bodyMaximum = 100;
