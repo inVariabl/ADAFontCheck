@@ -1,218 +1,195 @@
 <!DOCTYPE html>
-<html>
-
+<html data-theme="emerald">
 <head>
   <meta charset="utf-8">
   <title>ADA Font Check</title>
-  <!-- Materialize -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible&display=swap" rel="stylesheet">
   <!-- OpenType.js -->
   <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
-  <link rel="stylesheet" href="style.css" media="screen" />
+  <link rel="stylesheet" href="dist/style.css" media="screen" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
+<body class="flex flex-col min-h-screen">
 
-<body>
-  <div class="navbar-fixed">
-      <nav>
-    <div class="nav-wrapper z-depth-3 blue darken-4 tooltip" data-position="bottom" data-tooltip="Determines if a font meets California ADA accessibility regulations for tactile signage using opentype.js. California regulations for tactile signage are more stringent than Federal ADAAG sign requirements.">
-      <a href="#" class="brand-logo white-text left">
-        <img src="media/logo.png" class="brand-logo left hide-on-med-and-down tooltipped" data-position="bottom"
-          data-tooltip="ADAFontCheck uses opentype.js to analyze font glyphs and determine if the font metrics meet American Disability Association requirements" width="500" style="padding: 10px 10px;">
-      </a>
-      <ul class="right">
-        <li>
-          <!-- Switch -->
-          <div class="switch tooltipped" data-position="bottom" data-tooltip="Display all fonts or only the passing ones">
-            <label class="white-text">
-              <b class="show-on-small">All</b><b class="hide-on-med-and-down"> Fonts</b>
-              <input type="checkbox" id="checkbox" class="">
-              <span class="lever"></span>
-              <b class="show-on-small">ADA</b><b class="hide-on-med-and-down"> Fonts Only</b>
-            </label>
-          </div>
-        </li>
-        <li class="">
-          <div class="upload-btn-wrapper tooltipped" data-position="bottom" data-tooltip="Upload a Folder of TTF/OTF fonts">
-              <a class="btn blue lighten-4 black-text z-depth-2">Folder Upload</a>
-            <input id="font-name" type="file" webkitdirectory mozdirectory msdirectory odirectory directory name="folder" multiple="multiple"></input>
-          </div>
-        </li>
-        <li class="">
-          <div class="upload-btn-wrapper tooltipped" data-position="bottom" data-tooltip="Upload a single font or select multiple fonts">
-              <a class="btn blue lighten-4 black-text z-depth-2">File Upload</a>
-            <input id="single-font" type="file" name="file" multiple="multiple"></input>
-          </div>
-        </li>
-        <li>
-          <a id="clear" onclick="clearFonts();" class="btn blue waves-effect tooltipped" data-position="bottom" data-tooltip="Clear All Fonts">Clear<i class="material-icons right">refresh</i></a>
-        </li>
-      </ul>
+<div class="navbar bg-sky-800">
+  <div class="flex-1">
+    <div class="">
+      <img src="media/logo.png" class="btn btn-ghost" style="padding: 10px 10px 0px 10px;">
     </div>
-    </nav>
   </div>
+  <div class="flex-none">
+    <ul class="menu menu-horizontal px-1">
+    <li tabindex="0">
+        <a class="text-secondary-content">
+          Upload
+          <svg class="fill-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/></svg>
+        </a>
+        <ul class="p-2 bg-base-100 drop-shadow-xl z-3">
+          <li class="upload-btn-wrapper">
+            <a>File</a>
+            <input id="single-font" type="file" name="file" multiple="multiple"></input>
+          </li>
+          <li class="upload-btn-wrapper">
+            <a>Folder</a>
+            <input id="font-name" type="file" webkitdirectory mozdirectory msdirectory odirectory directory name="folder" multiple="multiple"></input>
+          </li>
+        </ul>
+      <li tabindex="0">
+        <a class="text-secondary-content">
+          Settings
+          <svg class="fill-current" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"/></svg>
+        </a>
+        <ul class="p-2 bg-base-100 z-3 drop-shadow-xl">
+          <li>
+            <a>
+              <input type="checkbox" class="checkbox" id="ada_only" onclick="toggleADAOnly();" />
+              ADA Only
+            </a>
+          </li>
+          <li>
+            <a>
+              <input type="checkbox" class="checkbox" id="compact" onclick="toggleCompactTable()" />
+             Compact Table
+            </a>
+          </li>
+          <li>
+            <a>
+              <input type="checkbox" class="checkbox" id="darkmode" onclick="toggleTheme()" />
+             Dark Mode
+            </a>
+          </li>
+        </ul>
+      <li><a class="text-secondary-content" id="clear" onclick="clearFonts();">Clear</a></li>
+      <li><a class="text-secondary-content" onclick="downloadCSV();">Export</a></li>
+    </ul>
+  </div>
+</div>
 
-  <main>
-    <div class="container">
-      <div class="row indigo-text darken-3 container">
-        <div class="col s8"><h5>Font Name</h5></div>
-        <div class="col s4"><h5>Test Result</h5></div>
-      </div>
-      <ul class="collapsible popout" id="displayresults">
-        <li>
-          <div class="collapsible-header row green lighten-5">
-            <div class="col s11"><b>Example Font 1</b></div>
-            <div class="col s1"><i class="material-icons green-text tooltipped" data-position="bottom" data-tooltip="Meets ADA Requirements">check_circle</i></div>
-          </div>
-          <div class="collapsible-body row"><span></span>
-            <div class="col s11">Not Italic Test</div>
-            <div class="col s1"><i class="material-icons green-text">check_circle</i></div>
-          </div>
-          <div class="collapsible-body row"><span></span>
-            <div class="col s11">Stroke Width Test</div>
-            <div class="col s1"><i class="material-icons green-text">check_circle</i></div>
-          </div>
-          <div class="collapsible-body row"><span></span>
-            <div class="col s11">Body Width Test</div>
-            <div class="col s1"><i class="material-icons green-text">check_circle</i></div>
-          </div>
-          <div class="collapsible-body row"><span></span>
-            <div class="col s11">Letter 'I' Ratio</div>
-            <div class="col s1">10-15%</div>
-          </div>
-          <div class="collapsible-body row"><span></span>
-            <div class="col s11">Letter 'H' Ratio</div>
-            <div class="col s1">60-100%</div>
-          </div>
-          <div class="collapsible-body row"><span></span>
-            <div class="col s11">Letter 'O' Ratio</div>
-            <div class="col s1">60-100%</div>
-          </div>
-        </li>
-        <li>
-          <div class="collapsible-header row">
-            <div class="col s11"><b>Example Font 2</b></div>
-            <div class="col s1"><i class="material-icons red-text tooltipped" data-position="bottom" data-tooltip="Doesn't Meet ADA Requirements">cancel</i></div>
-          </div>
-          <div class="collapsible-body row"><span></span>
-            <div class="col s11">Not Italic Test</div>
-            <div class="col s1"><i class="material-icons red-text">cancel</i></div>
-          </div>
-          <div class="collapsible-body row"><span></span>
-            <div class="col s11">Stroke Width Test</div>
-            <div class="col s1"><i class="material-icons red-text">cancel</i></div>
-          </div>
-          <div class="collapsible-body row"><span></span>
-            <div class="col s11">Body Width Test</div>
-            <div class="col s1"><i class="material-icons red-text">cancel</i></div>
-          </div>
-          <div class="collapsible-body row"><span></span>
-            <div class="col s11">Letter 'I' Ratio</div>
-            <div class="col s1">30%</div>
-          </div>
-          <div class="collapsible-body row"><span></span>
-            <div class="col s11">Letter 'H' Ratio</div>
-            <div class="col s1">50%</div>
-          </div>
-          <div class="collapsible-body row"><span></span>
-            <div class="col s11">Letter 'O' Ratio</div>
-            <div class="col s1">40%</div>
-          </div>
-        </li>
-      </ul>
+<main class="flex-grow base-100">
+<div class="overflow-x-auto p-8 drop-shadow-lg">
+  <table class="table w-full flex justify-center">
+    <thead>
+      <tr>
+        <th>Font Name</th>
+        <th>All Tests</th>
+        <th>Stroke Width (10 - 15%)</th>
+        <th>Body Width (60 - 100%)</th>
+      </tr>
+    </thead>
+    <tbody id="data">
+      <tr class="bg-success">
+        <td class="bg-success">Roboto Regular</td>
+        <td class="bg-success">Pass</td>
+        <td class="bg-success">13.19%</td>
+        <td class="bg-success">77.56%</td>
+      </tr>
+      <tr class="false">
+        <td>Roboto Black</td>
+        <td class="text-error">Fail</td>
+        <td class="text-error">24.04%</td>
+        <td>93.93%</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</main>
+
+<footer class="footer footer-center p-10 bg-base-300 text-base-content mt-auto">
+  <div class="grid grid-flow-col gap-4">
+    <label for="about-modal" class="link link-hover">About</label>
+    <label for="tests-modal" class="link link-hover">Tests</label>
+    <label for="usage-modal" class="link link-hover">Usage</label>
+    <label for="compliance-modal" class="link link-hover">Compliance</label>
+    <label for="disclaimer-modal" class="link link-hover">Disclaimer</label>
+  </div>
+  <div>
+    <div class="grid grid-flow-col gap-4">
+      <a href="https://opentype.js.org/glyph-inspector.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+         <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 01.67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 11-.671-1.34l.041-.022zM12 9a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" />
+        </svg>
+      </a>
+      <a href="https://github.com/inVariabl/ADAFontCheck"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+  <path fill-rule="evenodd" d="M14.447 3.027a.75.75 0 01.527.92l-4.5 16.5a.75.75 0 01-1.448-.394l4.5-16.5a.75.75 0 01.921-.526zM16.72 6.22a.75.75 0 011.06 0l5.25 5.25a.75.75 0 010 1.06l-5.25 5.25a.75.75 0 11-1.06-1.06L21.44 12l-4.72-4.72a.75.75 0 010-1.06zm-9.44 0a.75.75 0 010 1.06L2.56 12l4.72 4.72a.75.75 0 11-1.06 1.06L.97 12.53a.75.75 0 010-1.06l5.25-5.25a.75.75 0 011.06 0z" clip-rule="evenodd" />
+</svg></a>
+      <a href="https://paypal.me/DanielCrooks?country.x=US&locale.x=en_US"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+</svg></a>
     </div>
-  </main>
-  <footer class="page-footer blue darken-4">
-    <div class="container">
-      <div class="row">
-        <div class="col s12">
-          <h5 class="white-text"><b>ADA Font Check</b></h5>
-          <p class="grey-text text-lighten-4">Determines if a font meets California ADA accessibility regulations for tactile signage using <a class="blue-text text-lighten-4" href="https://opentype.js.org/">opentype.js</a>. California regulations for tactile signage are more stringent than Federal ADAAG sign requirements.</p>
-<p>
-<b>Tests</b>
-  <ol>
-    <li>Character Stroke Width ratio of 10%-15% using the uppercase letter 'I'.</li>
-    <li>Character Body Width ratio of 60%–100% using the uppercase letters 'I,' 'H,' and 'O'.</li>
+  </div>
+  <div>
+    <p>Copyright © 2023 - All right reserved by <a class="link link-hover" href="http://crooksdesign.com/">Crooks Design, INC.</a></p>
+  </div>
+</footer>
+  <script src="dist/index.min.js" charset="utf-8"></script>
+  <script src="dist/checkfont.min.js" charset="utf-8"></script>
+
+  <!-- Modal -->
+<input type="checkbox" id="about-modal" class="modal-toggle" />
+<label for="about-modal" class="modal cursor-pointer">
+  <label class="modal-box relative" for="">
+    <h3 class="text-lg font-bold">About ADA Font Check</h3>
+    <p class="py-4">ADAFontCheck determines if a font meets California ADA accessibility regulations for tactile signage using <a class="link" href="https://opentype.js.org/">opentype.js</a>.</p>
+    <p>California regulations for tactile signage are more stringent than Federal ADAAG sign requirements.</p>
+  </label>
+</label>
+
+<input type="checkbox" id="tests-modal" class="modal-toggle" />
+<label for="tests-modal" class="modal cursor-pointer">
+  <label class="modal-box relative" for="">
+    <h3 class="text-lg font-bold">ADA Tests Overview</h3>
+    <p class="">ADAFontCheck perfoms the following tests:</p>
+    <ul class="p-4 list-disc">
+      <li>Character Stroke Width ratio of 10%-15% using the uppercase letter 'I'.</li>
+      <li>Character Body Width ratio of 60%–100% using the uppercase letters 'I,' 'H,' and 'O'.</li>
 	  <li>Italic Font detection.</li>
 	  <li>Serif Font detection.</li>
 	  <li>Sans Serif Font determination.</li>
-  </ol>
+    </ul>
+  </label>
+</label>
 
-<b>How To Use</b>
-<ol>
-		<li>Select “All Fonts” to display both Pass and Fail fonts. Select “ADA Fonts Only” to display Pass fonts. </li>
-		<li>Select “Folder Upload” button for multiple fonts or “File Upload” button for a single font. </li>
-		<li>Navigate to the source file in your fonts library. </li>
-		<li>Select the fonts. </li>
-    <li>Review the test results by clicking on the font name. <i>Note that results appear for Sans Serif fonts only. Fonts that are not Sans Serif do not comply with ADA requirements.</i></li>
-</ol>
+<input type="checkbox" id="usage-modal" class="modal-toggle" />
+<label for="usage-modal" class="modal cursor-pointer">
+  <label class="modal-box relative" for="">
+    <h3 class="text-lg font-bold">How to use ADAFontCheck</h3>
+    <ol class="list-decimal p-4">
+      <li>Select “All Fonts” to display both Pass and Fail fonts. Select “ADA Fonts Only” to display Pass fonts. </li>
+      <li>Select “Folder Upload” button for multiple fonts or “File Upload” button for a single font. </li>
+      <li>Navigate to the source file in your fonts library. </li>
+      <li>Select the fonts. </li>
+      <li>Review the test results by clicking on the font name. <i>Note that results appear for Sans Serif fonts only. Fonts that are not Sans Serif do not comply with ADA requirements.</i></li>
+    </ol>
+  </label>
+</label>
 
-<b>Notes</b>
-<ol>
-  <li>This service is based on California Building Standards Code 11B-703 for character proportion ratios. </li>
-  <li>Fonts must meet the ratio requirements of both Tests 1 and 2 for ADA compliance. </li>
-  <li>ADA compliance is based on an overall average of uppercase letter width to height. </li>
-  <li>Numerals are not tested for compliance but are considered compatible when used with letters of the same font set and size. </li>
-</ol>
+<input type="checkbox" id="compliance-modal" class="modal-toggle" />
+<label for="compliance-modal" class="modal cursor-pointer">
+  <label class="modal-box relative" for="">
+    <h3 class="text-lg font-bold">ADAFontCheck Compliance Information</h3>
+    <ol class="py-4 list-none">
+      <li>This service is based on <a class="link" href="https://up.codes/viewer/california/ibc-2018/chapter/new_11B/accessibility-to-public-buildings-public-accommodations-commercial-buildings-and#new_11B-703.2.4">California Building Standards Code 11B-703.2.4</a> and <a class="link" href="https://up.codes/viewer/california/ibc-2018/chapter/new_11B/accessibility-to-public-buildings-public-accommodations-commercial-buildings-and#new_11B-703.2.6">11B-703.2.6</a> for character proportion ratios.</li>
+      <li>Fonts must meet the ratio requirements of both Tests 1 and 2 for ADA compliance.</li>
+      <li>ADA compliance is based on an overall average of uppercase letter width to height.</li>
+      <li>Numerals are not tested for compliance but are considered compatible when used with letters of the same font set and size.</li>
+    </ol>
+  </label>
+</label>
 
-<b>Disclaimers</b>
-<ol>
-  <li>ADA FONT CHECK is not endorsed by the United States Access Board or anyone else. </li>
-  <li>The owners of ADA FONT CHECK assume no liability or responsibility whatsoever for any direct, indirect, special, or other consequential damages relating to any use of this online service or the contents of this website. </li>
-  <li>Use at your own discretion. </li>
-</ol>
+<input type="checkbox" id="disclaimer-modal" class="modal-toggle" />
+<label for="disclaimer-modal" class="modal cursor-pointer">
+  <label class="modal-box relative" for="">
+    <h3 class="text-lg font-bold">Disclaimer</h3>
+      <ol class="list-decimal p-5">
+        <li>ADA FONT CHECK is not endorsed by the United States Access Board or anyone else. </li>
+        <li>The owners of ADA FONT CHECK assume no liability or responsibility whatsoever for any direct, indirect, special, or other consequential damages relating to any use of this online service or the contents of this website. </li>
+        <li>Use at your own discretion. </li>
+        <li>Have fun and be yourself! </li>
+      </ol>
+  </label>
+</label>
 
-</p>
-        </div>
-      </div>
-    </div>
-    <div class="footer-copyright">
-      <div class="container row">
-        <a class="blue-text text-lighten-4 col s10" href="http://crooksdesign.com/">ADA FONT CHECK™ • Crooks Design © 2022 • Made in USA </a>
-        <a class="blue-text text-lighten-4 right col s1" href="https://github.com/inVariabl/ADAFontCheck">Github</a>
-        <a class="blue-text text-lighten-4 right col s1 modal-trigger" href="#donate">Donate</a>
-
-        <!-- Modal Structure -->
-        <div id="donate" class="modal">
-          <div class="modal-content">
-            <h5 class="black-text">Support ADAFontCheck!</h5>
-            <i class="grey-text">Our website also supports OpenAlias, simply type "adafontcheck.xyz" into a supported crypto wallet.</i>
-            <p class="black-text">Bitcoin (BTC): </p>
-            <code class="black-text">bc1qpwjvycfhvz6gjrqv0nghkh3sal804tg0cfjew9</code>
-            <p class="black-text">Monero (XMR): </p>
-            <code class="black-text">471huRTWJjZ1PRkza3egnYenXNyfQ7A1wbckmsEdk2zZYNbtiJ5nSHyfU6kuyZtWLQKiWFxouD3S3MkrypJTmKb7DE64xtM</code>
-            <br>
-
-          </div>
-          <div class="modal-footer">
-            <a class="modal-close waves-effect waves-green btn-flat">Thanks!</a>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </footer>
-
-  <!-- Compiled and minified JavaScript -->
-  <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-  <script type="text/javascript">
-    $(document).ready(function() {
-      $('.collapsible').collapsible({
-        constrainWidth: false,
-        hover: true,
-        belowOrigin: true,
-        alignment: 'left',
-      });
-    });
-    $(document).ready(function() {
-      $('.tooltipped').tooltip();
-      $('.modal').modal();
-    });
-  </script>
-  <script src="index.js" charset="utf-8"></script>
-  <script src="checkfont.js" charset="utf-8"></script>
 </body>
-
 </html>

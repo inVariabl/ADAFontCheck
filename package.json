@@ -4,18 +4,20 @@
   "description": "Determine if a font meets ADA requirements",
   "main": "mk1.js",
   "dependencies": {
+    "daisyui": "^2.51.6",
     "express": "^4.17.1",
     "express-fileupload": "^1.1.5",
     "fast-csv": "^2.4.1",
     "glob": "^7.1.4",
+    "minify": "^10.0.0",
     "opentype.js": "^0.10.0",
     "package.json": "^2.0.1",
     "path": "^0.12.7"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "start": "node checkfont_node.js",
+    "build": "npx tailwindcss -i ./src/style.css -o ./dist/style.css"
   },
   "keywords": [
     "ADA",
@@ -24,5 +26,8 @@
     "truetype"
   ],
   "author": "Daniel Crooks",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "tailwindcss": "^3.3.2"
+  }
 }
