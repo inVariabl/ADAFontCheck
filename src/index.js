@@ -12,34 +12,41 @@ function onReadFolder(e) {
     reader.onload = function(e) {
       try {
         const font = opentype.parse(e.target.result);
-        const result = checkfont(font);
+        const result = checkfont(font); // ERROR HERE
         console.log(result);
         try {
 
-        let style = {};
-        let html = ``;
-
-        if (result.test.ada) {
-          style.num = 'bg-success';
-          style.font = 'bg-success';
-          style.ada = 'bg-success';
-          style.stroke = 'bg-success';
-          style.body = 'bg-success';
-        } else {
-          style.ada = test(result.test.ada);
-          style.stroke = test(result.test.stroke);
-          style.body = test(result.test.body);
+        function iconResults(test) {
+          let passSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6" style="color: green;"><path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clip-rule="evenodd" /></svg>`;
+          let failSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" /></svg>`;
+          if (test) {
+            return passSVG;
+          } else {
+            return failSVG;
+          }
         }
 
-          html = `
-            <tr class="${result.test.ada}">
-              <td class="${style.font}">${result.name}</td>
-              <td class="${style.ada}">${passFail(result.test.ada)}</td>
-              <td class="${style.stroke}">${result.stroke.ratio}%</td>
-              <td class="${style.body}">${result.body.ratio}%</td>
+        function colorResults(test) {
+          if (test) {
+            return 'text-success';
+          } else {
+            return 'text-error';
+          }
+        }
+
+        let html = ``;
+        html = `
+            <tr>
+              <td>${result.name}</td>
+              <td>${result.body.ratio}%</td>
+              <td>${result.stroke.ratio}%</td>
+
+              <td name="federal" class="${colorResults(result.test.federal.tactile)}" data-export-value="${passFail(result.test.federal.tactile)}">${iconResults(result.test.federal.tactile)}</td>
+              <td name="federal" class="${colorResults(result.test.federal.visual)}" data-export-value="${passFail(result.test.federal.visual)}">${iconResults(result.test.federal.visual)}</td>
+              <td name="california" class="${colorResults(result.test.california.tactile)}" data-export-value="${passFail(result.test.california.tactile)}">${iconResults(result.test.california.tactile)}</td>
+              <td name="california" class="${colorResults(result.test.california.visual)}" data-export-value="${passFail(result.test.california.visual)}">${iconResults(result.test.california.visual)}</td>
             </tr>
           `;
-
         document.getElementById('data').innerHTML += html;
         } catch (err) {
           console.error("HTML Insertion Error");
@@ -77,21 +84,41 @@ function clearFonts() {
 function downloadCSV() {
   const rows = document.querySelectorAll("table tr");
   let csvContent = "data:text/csv;charset=utf-8,";
+
+  // Get today's date
   const today = new Date();
   const date = today.getFullYear().toString().padStart(2, '0') + (today.getMonth() + 1).toString().padStart(2, '0') + today.getDate().toString().padStart(2, '0');
+
+  // Generate UUID
   const uuid = generateUUID();
+
+  // Combine date and UUID for filename
   const fileName = `adafontcheck-${date}-${uuid}.csv`;
 
-  rows.forEach(function (row) {
+  // Header formatting
+  const headers = ['', '', '', 'FEDERAL CHARACTER TESTS', '', 'CALIFORNIA CHARACTER TESTS', ''];
+  csvContent += headers.join(",") + "\r\n";
+
+  // Start iterating from the second set of <tr> elements
+  for (let rowIndex = 1; rowIndex < rows.length; rowIndex++) {
+    const row = rows[rowIndex];
     const rowData = [];
     const cols = row.querySelectorAll("th, td");
 
-    cols.forEach(function (col) {
-      rowData.push(col.innerText);
+    cols.forEach(function (col, colIndex) {
+      if (colIndex >= 3 && colIndex <= 6) {
+        // For merged cells, concatenate text content without newline characters
+        const cellText = Array.from(col.querySelectorAll("div")).map(div => div.innerText.trim()).join(' ');
+        // Check for data attribute and include its value in CSV content
+        const exportValue = col.getAttribute('data-export-value');
+        rowData.push(exportValue ? exportValue : cellText);
+      } else {
+        rowData.push(col.innerText);
+      }
     });
 
     csvContent += rowData.join(",") + "\r\n";
-  });
+  }
 
   const encodedUri = encodeURI(csvContent);
   const link = document.createElement("a");
@@ -123,13 +150,30 @@ function toggleTheme() {
   }
 }
 
-function toggleADAOnly() {
-  const falseRows = document.querySelectorAll('tr.false');
-  falseRows.forEach(row => {
-    if (row.style.visibility === 'collapse') {
-      row.style.visibility = 'visible';
-    } else {
-      row.style.visibility = 'collapse';
+function toggleFederalOnly() {
+  const rows = document.querySelectorAll("tr");
+  rows.forEach(row => {
+    const cell = row.querySelector("td[name='federal'].text-error");
+    if (cell) { // Check if a matching cell exists in the row
+      if (row.style.display === 'none') {
+        row.style.display = 'table-row';
+      } else {
+        row.style.display = 'none';
+      }
+    }
+  });
+}
+
+function toggleCaliforniaOnly() {
+  const rows = document.querySelectorAll("tr");
+  rows.forEach(row => {
+    const cell = row.querySelector("td[name='california'].text-error");
+    if (cell) { // Check if a matching cell exists in the row
+      if (row.style.display === 'none') {
+        row.style.display = 'table-row';
+      } else {
+        row.style.display = 'none';
+      }
     }
   });
 }

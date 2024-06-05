@@ -3009,5 +3009,21 @@ main {
 }
 
 body {
-  font-family: 'Atkinson Hyperlegible', sans-serif;
+  font-family: "Public Sans", sans-serif;
+}
+
+th {
+  font-size: 16px !important;
+}
+
+.regular {
+  font-weight: normal !important;
+  text-transform: none !important;
+}
+
+.inline-svg {
+  display: inline-block;
+  vertical-align: middle;
+  width: 1em;
+  height: 1em;
 }

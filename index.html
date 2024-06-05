@@ -6,7 +6,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <!-- OpenType.js -->
   <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
   <link rel="stylesheet" href="dist/style.css" media="screen" />
@@ -45,8 +45,14 @@
         <ul class="p-2 bg-base-100 z-3 drop-shadow-xl">
           <li>
             <a>
-              <input type="checkbox" class="checkbox" id="ada_only" onclick="toggleADAOnly();" />
-              ADA Only
+              <input type="checkbox" class="checkbox" id="federal_only" onclick="toggleFederalOnly();" />
+              Federal Only
+            </a>
+          </li>
+          <li>
+            <a>
+              <input type="checkbox" class="checkbox" id="california_only" onclick="toggleCaliforniaOnly();" />
+              California Only
             </a>
           </li>
           <li>
@@ -70,27 +76,116 @@
 
 <main class="flex-grow base-100">
 <div class="overflow-x-auto p-8 drop-shadow-lg">
-  <table class="table w-full flex justify-center">
+  <table class="table w-full flex">
     <thead>
       <tr>
+        <th colspan="3"></th>
+        <th colspan="2">Federal Character Tests</th>
+        <th colspan="2">California Character Tests</th>
+      </tr>
+      <tr>
         <th>Font Name</th>
-        <th>All Tests</th>
-        <th>Stroke Width (10 - 15%)</th>
-        <th>Body Width (60 - 100%)</th>
+        <th>Body Width</th>
+        <th>Stroke Width</th>
+        <!-- Federal -->
+        <th>
+            <div>Federal Tactile</div>
+            <div class="regular">Body: 55% - 110%</div>
+            <div class="regular">Stroke: 0% - 15%</div>
+        </th>
+        <th>
+            <div>Federal Visual</div>
+            <div class="regular">Body: 55% - 110%</div>
+            <div class="regular">Stroke: 10% - 30%</div>
+        </th>
+        <!-- California -->
+        <th>
+            <div>California Tactile</div>
+            <div class="regular">Body: 60% - 110%</div>
+            <div class="regular">Stroke: 0% - 15%</div>
+        </th>
+        <th>
+            <div>California Visual</div>
+            <div class="regular">Body: 60% - 110%</div>
+            <div class="regular">Stroke: 10% - 20%</div>
+        </th>
       </tr>
     </thead>
     <tbody id="data">
-      <tr class="bg-success">
-        <td class="bg-success">Roboto Regular</td>
-        <td class="bg-success">Pass</td>
-        <td class="bg-success">13.19%</td>
-        <td class="bg-success">77.56%</td>
-      </tr>
       <tr class="false">
-        <td>Roboto Black</td>
-        <td class="text-error">Fail</td>
-        <td class="text-error">24.04%</td>
-        <td>93.93%</td>
+        <td class="">Typeface 1</td>
+        <td class="">65.00%</td>
+        <td class="">35.00%</td>
+        <td name="federal" class="text-error" data-export-value="Fail">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+            <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+          </svg>
+        </td>
+        <td name="federal" class="text-error" data-export-value="Fail">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+            <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+          </svg>
+        </td>
+        <td name="california" class="text-error" data-export-value="Fail">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+            <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+          </svg>
+        </td>
+        <td name="california" class="text-error" data-export-value="Fail">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+            <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+          </svg>
+        </td>
+      </tr>
+      <tr>
+        <td class="">Typeface 2</td>
+        <td class="">70.00%</td>
+        <td class="">15.00%</td>
+        <td name="federal" class="text-success" data-export-value="Pass">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6" style="color: green;">
+            <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clip-rule="evenodd" />
+          </svg>
+        </td>
+        <td name="federal" class="text-success" data-export-value="Pass">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6" style="color: green;">
+            <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clip-rule="evenodd" />
+          </svg>
+        </td>
+        <td name="california" class="text-success" data-export-value="Pass">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6" style="color: green;">
+            <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clip-rule="evenodd" />
+          </svg>
+        </td>
+        <td name="california" class="text-success" data-export-value="Pass">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6" style="color: green;">
+            <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clip-rule="evenodd" />
+          </svg>
+        </td>
+      </tr>
+      <tr>
+        <td class="">Typeface 3</td>
+        <td class="">70.00%</td>
+        <td class="">25.00%</td>
+        <td name="federal" class="text-success" data-export-value="Pass">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6" style="color: green;">
+            <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clip-rule="evenodd" />
+          </svg>
+        </td>
+        <td name="federal" class="text-success" data-export-value="Pass">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6" style="color: green;">
+            <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clip-rule="evenodd" />
+          </svg>
+        </td>
+        <td name="california" class="text-success" data-export-value="Pass">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6" style="color: green;">
+            <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clip-rule="evenodd" />
+          </svg>
+        </td>
+        <td name="california" class="text-error" data-export-value="Fail">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6">
+            <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+          </svg>
+        </td>
       </tr>
     </tbody>
   </table>
@@ -120,7 +215,7 @@
     </div>
   </div>
   <div>
-    <p>Copyright © 2023 - All right reserved by <a class="link link-hover" href="http://crooksdesign.com/">Crooks Design, INC.</a></p>
+    <p>Copyright © 2024 - All rights reserved by Crooks Design.</p>
   </div>
 </footer>
   <script src="dist/index.min.js" charset="utf-8"></script>
@@ -132,7 +227,6 @@
   <label class="modal-box relative" for="">
     <h3 class="text-lg font-bold">About ADA Font Check</h3>
     <p class="py-4">ADAFontCheck determines if a font meets California ADA accessibility regulations for tactile signage using <a class="link" href="https://opentype.js.org/">opentype.js</a>.</p>
-    <p>California regulations for tactile signage are more stringent than Federal ADAAG sign requirements.</p>
   </label>
 </label>
 
@@ -142,11 +236,13 @@
     <h3 class="text-lg font-bold">ADA Tests Overview</h3>
     <p class="">ADAFontCheck perfoms the following tests:</p>
     <ul class="p-4 list-disc">
-      <li>Character Stroke Width ratio of 10%-15% using the uppercase letter 'I'.</li>
-      <li>Character Body Width ratio of 60%–100% using the uppercase letters 'I,' 'H,' and 'O'.</li>
-	  <li>Italic Font detection.</li>
-	  <li>Serif Font detection.</li>
-	  <li>Sans Serif Font determination.</li>
+      <li>Character Stroke Width ratio using the uppercase letter 'I'.</li>
+      <li>Character Body Width ratio using the uppercase letters 'I,' 'H,' and 'O'.</li>
+      <li>Italic Font detection.</li>
+      <li>Serif Font detection.</li>
+      <li>Sans Serif Font determination.</li>
+      <li>Fonts must meet the ratio requirements of both Tests 1 and 2 for ADA compliance.</li>
+      <li>Numerals are not tested for compliance but are considered compatible when used with letters of the same font set and size.</li>
     </ul>
   </label>
 </label>
@@ -156,11 +252,20 @@
   <label class="modal-box relative" for="">
     <h3 class="text-lg font-bold">How to use ADAFontCheck</h3>
     <ol class="list-decimal p-4">
-      <li>Select “All Fonts” to display both Pass and Fail fonts. Select “ADA Fonts Only” to display Pass fonts. </li>
-      <li>Select “Folder Upload” button for multiple fonts or “File Upload” button for a single font. </li>
-      <li>Navigate to the source file in your fonts library. </li>
-      <li>Select the fonts. </li>
-      <li>Review the test results by clicking on the font name. <i>Note that results appear for Sans Serif fonts only. Fonts that are not Sans Serif do not comply with ADA requirements.</i></li>
+      <li>Select “All Fonts” to display both Pass
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 inline-svg" style="color: green;">
+            <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clip-rule="evenodd" />
+          </svg>
+        and Fail
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 inline-svg text-error">
+            <path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+          </svg>
+        fonts. Select “ADA Fonts Only” to display just Pass fonts.</li>
+      <li>Select “Folder Upload” for multiple fonts or “File Upload” for a single font.</li>
+      <li>Navigate to your fonts source files.</li>
+      <li>Select the fonts and upload.</li>
+      <li>Review the test results. <i>Note that results appear for Sans Serif fonts only. Fonts that are not Sans Serif do not comply with ADA requirements.</i></li>
+      <li>Export the tests results.</li>
     </ol>
   </label>
 </label>
@@ -170,10 +275,7 @@
   <label class="modal-box relative" for="">
     <h3 class="text-lg font-bold">ADAFontCheck Compliance Information</h3>
     <ol class="py-4 list-none">
-      <li>This service is based on <a class="link" href="https://up.codes/viewer/california/ibc-2018/chapter/new_11B/accessibility-to-public-buildings-public-accommodations-commercial-buildings-and#new_11B-703.2.4">California Building Standards Code 11B-703.2.4</a> and <a class="link" href="https://up.codes/viewer/california/ibc-2018/chapter/new_11B/accessibility-to-public-buildings-public-accommodations-commercial-buildings-and#new_11B-703.2.6">11B-703.2.6</a> for character proportion ratios.</li>
-      <li>Fonts must meet the ratio requirements of both Tests 1 and 2 for ADA compliance.</li>
-      <li>ADA compliance is based on an overall average of uppercase letter width to height.</li>
-      <li>Numerals are not tested for compliance but are considered compatible when used with letters of the same font set and size.</li>
+      This service is based on <a class="link" href="https://archive.ada.gov/regs2010/2010ADAStandards/2010ADAStandards.pdf">2010 Americans with Disabilities Act Accessibility Guidelines (703.2.4, 703.2.6, 703.5.4, 703.5.7)</a> and <a class="link" href="https://up.codes/viewer/california/ibc-2018/chapter/new_11B/accessibility-to-public-buildings-public-accommodations-commercial-buildings-and#new_11B-703">2019 California Building Standards Code (11B-703.2.4 / 1143A.6.4, 11B-703.2.6 / 1143.A.6.5, 11B-703.5.4 / 1143.A.5.3, 11B-703.5.7 / 1143A.5.6)</a>.
     </ol>
   </label>
 </label>
@@ -183,10 +285,9 @@
   <label class="modal-box relative" for="">
     <h3 class="text-lg font-bold">Disclaimer</h3>
       <ol class="list-decimal p-5">
-        <li>ADA FONT CHECK is not endorsed by the United States Access Board or anyone else. </li>
-        <li>The owners of ADA FONT CHECK assume no liability or responsibility whatsoever for any direct, indirect, special, or other consequential damages relating to any use of this online service or the contents of this website. </li>
-        <li>Use at your own discretion. </li>
-        <li>Have fun and be yourself! </li>
+        <li>ADAFontCheck is not endorsed by the United States Access Board or anyone else.</li>
+        <li>The creators of ADAFontCheck assume no liability or responsibility whatsoever for any direct, indirect, special, or other consequential damages relating to any use of this online service or the contents of this website.</li>
+        <li>Use at your own discretion with confidence.</li>
       </ol>
   </label>
 </label>

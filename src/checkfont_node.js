@@ -1,9 +1,6 @@
 // ADA Font Check - Determines if a font meets ADA Font Requirements
 // Created by Daniel Crooks
 // github.com/inVariabl/ADAFontCheck
-// Node.js version
-
-// Usage: $ node checkfont_node.js '/path/to/fontFile'
 
 const ot = require('opentype.js');
 const fs = require('fs');
@@ -34,23 +31,59 @@ function checkfont(opentype) {
         height: undefined,
         ratio: undefined,
       },
+      federal: {
+        body: {
+          min: 55,
+          max: 110,
+        },
+        tactile: {
+          min: 0,
+          max: 15,
+        },
+        visual: {
+          min: 10,
+          max: 30,
+        },
+      },
+      california: {
+        body: {
+          min: 60,
+          max: 110,
+        },
+        tactile: {
+          min: 0,
+          max: 15,
+        },
+        visual: {
+          min: 10,
+          max: 20,
+        },
+      },
       stroke: {
-        min: 10,
-        max: 15,
+        // min: 10,
+        // max: 15,
         ratio: undefined,
       },
       body: {
-        min: 60,
-        max: 100,
+        // min: 60,
+        // max: 100,
         ratio: undefined,
       },
       test: {
         notitalic: null,
-        stroke: null,
-        body: null,
-        ada: null,
         sansSerif: null,
-      }
+        //stroke: null,
+        //body: null,
+        //ada: null,
+        federal: {
+          tactile: null,
+          visual: null,
+        },
+        california: {
+          tactile: null,
+          visual: null,
+        },
+      },
   };
 
   function not_italicTest() {
@@ -97,14 +130,6 @@ function checkfont(opentype) {
     }
   }
 
-  function strokeTest() {
-    if (font.i.ratio >= font.stroke.min && font.i.ratio <= font.stroke.max) {
-      return true;
-    } else if (font.i.ratio < font.stroke.min || font.i.ratio > font.stroke.max) {
-      return false;
-    }
-  }
-
   function getSize(arr) {
     return arr[arr.length - 1] - arr[0];
   }
@@ -126,12 +151,8 @@ function checkfont(opentype) {
     return Number(((font.h.ratio + font.o.ratio) / 2).toFixed(2));
   }
 
-  function bodyTest() {
-    return font.body.ratio >= font.body.min && font.body.ratio <= font.body.max;
-  }
-
-  function adaTest() {
-    return strokeTest() && bodyTest() && not_italicTest();
+  function test(min, max, ratio) {
+    return ratio >= min && ratio <= max;
   }
 
   /* Stroke Width:Height Ratio */
@@ -159,9 +180,20 @@ function checkfont(opentype) {
   font.test.sansSerif = sansSerifTest();
   font.test.notitalic = not_italicTest();
   font.body.ratio = bodyAverage();
-  font.test.stroke = strokeTest();
-  font.test.body = bodyTest();
-  font.test.ada = adaTest();
+
+  function standardsTest(bodyMin, bodyMax, bodyRatio, strokeMin, strokeMax, strokeRatio) { // california or federal
+    if (font.test.sansSerif && font.test.notitalic) {
+      if (test(bodyMin, bodyMax, bodyRatio)) {
+        return test(strokeMin, strokeMax, strokeRatio);
+      }
+    }
+    return false;
+  }
+
+  font.test.federal.tactile = standardsTest(font.federal.body.min, font.federal.body.max, font.body.ratio, font.federal.tactile.min, font.federal.tactile.max, font.stroke.ratio);
+  font.test.federal.visual = standardsTest(font.federal.body.min, font.federal.body.max, font.body.ratio, font.federal.visual.min, font.federal.visual.max, font.stroke.ratio);
+  font.test.california.tactile = standardsTest(font.california.body.min, font.california.body.max, font.body.ratio, font.california.tactile.min, font.california.tactile.max, font.stroke.ratio);
+  font.test.california.visual = standardsTest(font.california.body.min, font.california.body.max, font.body.ratio, font.california.visual.min, font.california.visual.max, font.stroke.ratio);
 
   console.log(font);
   return font;
