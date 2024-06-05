@@ -3,10 +3,10 @@ ADAFontCheck uses [opentype.js](opentype.js.org) to [analyze font glyphs](openty
 
 ## Demo Link -> [adafontcheck.xyz](https://adafontcheck.xyz/)
 
-![](media/overview.png)
+![](media/overview3.png)
 *View Fonts at a glance*
 
-![](media/compact.png)
+![](media/compact3.png)
 *Compact view*
 
 
