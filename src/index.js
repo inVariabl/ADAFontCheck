@@ -1,7 +1,11 @@
 const folder = document.querySelector('input[name="folder"]');
 const file = document.querySelector('input[name="file"]');
-if (folder) { folder.addEventListener('change', onReadFolder, false); }
-if (file) { file.addEventListener('change', onReadFolder, false); }
+if (folder) {
+  folder.addEventListener('change', onReadFolder, false);
+}
+if (file) {
+  file.addEventListener('change', onReadFolder, false);
+}
 
 function onReadFolder(e) {
   clearFonts();
@@ -16,38 +20,54 @@ function onReadFolder(e) {
         console.log(result);
         try {
 
-        function iconResults(test) {
-          let passSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6" style="color: green;"><path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clip-rule="evenodd" /></svg>`;
-          let failSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" /></svg>`;
-          if (test) {
-            return passSVG;
-          } else {
-            return failSVG;
+          function iconResults(test) {
+            let passSVG =
+                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6" style="color: green;"><path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 0 1 .208 1.04l-9 13.5a.75.75 0 0 1-1.154.114l-6-6a.75.75 0 0 1 1.06-1.06l5.353 5.353 8.493-12.74a.75.75 0 0 1 1.04-.207Z" clip-rule="evenodd" /></svg>`;
+            let failSVG =
+                `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" /></svg>`;
+            if (test) {
+              return passSVG;
+            } else {
+              return failSVG;
+            }
           }
-        }
 
-        function colorResults(test) {
-          if (test) {
-            return 'text-success';
-          } else {
-            return 'text-error';
+          function colorResults(test) {
+            if (test) {
+              return 'text-success';
+            } else {
+              return 'text-error';
+            }
           }
-        }
 
-        let html = ``;
-        html = `
+          let html = ``;
+          html = `
             <tr>
               <td>${result.name}</td>
               <td>${result.body.ratio}%</td>
               <td>${result.stroke.ratio}%</td>
 
-              <td name="federal" class="${colorResults(result.test.federal.tactile)}" data-export-value="${passFail(result.test.federal.tactile)}">${iconResults(result.test.federal.tactile)}</td>
-              <td name="federal" class="${colorResults(result.test.federal.visual)}" data-export-value="${passFail(result.test.federal.visual)}">${iconResults(result.test.federal.visual)}</td>
-              <td name="california" class="${colorResults(result.test.california.tactile)}" data-export-value="${passFail(result.test.california.tactile)}">${iconResults(result.test.california.tactile)}</td>
-              <td name="california" class="${colorResults(result.test.california.visual)}" data-export-value="${passFail(result.test.california.visual)}">${iconResults(result.test.california.visual)}</td>
+              <td name="federal" class="${
+              colorResults(result.test.federal.tactile)}" data-export-value="${
+              passFail(result.test.federal.tactile)}">${
+              iconResults(result.test.federal.tactile)}</td>
+              <td name="federal" class="${
+              colorResults(result.test.federal.visual)}" data-export-value="${
+              passFail(result.test.federal.visual)}">${
+              iconResults(result.test.federal.visual)}</td>
+              <td name="california" class="${
+              colorResults(
+                  result.test.california.tactile)}" data-export-value="${
+              passFail(result.test.california.tactile)}">${
+              iconResults(result.test.california.tactile)}</td>
+              <td name="california" class="${
+              colorResults(
+                  result.test.california.visual)}" data-export-value="${
+              passFail(result.test.california.visual)}">${
+              iconResults(result.test.california.visual)}</td>
             </tr>
           `;
-        document.getElementById('data').innerHTML += html;
+          document.getElementById('data').innerHTML += html;
         } catch (err) {
           console.error("HTML Insertion Error");
         }
@@ -68,18 +88,14 @@ function test(result) {
         return 'text-error';
       }
     }
-  } catch(err) {
+  } catch (err) {
     console.error("ADA Results Error");
   }
 }
 
-function passFail(testName) {
-  return testName ? ["Pass"] : ["Fail"];
-}
+function passFail(testName) { return testName ? [ "Pass" ] : [ "Fail" ]; }
 
-function clearFonts() {
-  document.getElementById("data").innerHTML = "";
-}
+function clearFonts() { document.getElementById("data").innerHTML = ""; }
 
 function downloadCSV() {
   const rows = document.querySelectorAll("table tr");
@@ -87,7 +103,9 @@ function downloadCSV() {
 
   // Get today's date
   const today = new Date();
-  const date = today.getFullYear().toString().padStart(2, '0') + (today.getMonth() + 1).toString().padStart(2, '0') + today.getDate().toString().padStart(2, '0');
+  const date = today.getFullYear().toString().padStart(2, '0') +
+               (today.getMonth() + 1).toString().padStart(2, '0') +
+               today.getDate().toString().padStart(2, '0');
 
   // Generate UUID
   const uuid = generateUUID();
@@ -96,7 +114,9 @@ function downloadCSV() {
   const fileName = `adafontcheck-${date}-${uuid}.csv`;
 
   // Header formatting
-  const headers = ['', '', '', 'FEDERAL CHARACTER TESTS', '', 'CALIFORNIA CHARACTER TESTS', ''];
+  const headers = [
+    '', '', '', 'FEDERAL CHARACTER TESTS', '', 'CALIFORNIA CHARACTER TESTS', ''
+  ];
   csvContent += headers.join(",") + "\r\n";
 
   // Start iterating from the second set of <tr> elements
@@ -105,10 +125,12 @@ function downloadCSV() {
     const rowData = [];
     const cols = row.querySelectorAll("th, td");
 
-    cols.forEach(function (col, colIndex) {
+    cols.forEach(function(col, colIndex) {
       if (colIndex >= 3 && colIndex <= 6) {
         // For merged cells, concatenate text content without newline characters
-        const cellText = Array.from(col.querySelectorAll("div")).map(div => div.innerText.trim()).join(' ');
+        const cellText = Array.from(col.querySelectorAll("div"))
+                             .map(div => div.innerText.trim())
+                             .join(' ');
         // Check for data attribute and include its value in CSV content
         const exportValue = col.getAttribute('data-export-value');
         rowData.push(exportValue ? exportValue : cellText);
@@ -150,30 +172,36 @@ function toggleTheme() {
   }
 }
 
+let federalOnly = false;
+let californiaOnly = false;
+
 function toggleFederalOnly() {
-  const rows = document.querySelectorAll("tr");
-  rows.forEach(row => {
-    const cell = row.querySelector("td[name='federal'].text-error");
-    if (cell) { // Check if a matching cell exists in the row
-      if (row.style.display === 'none') {
-        row.style.display = 'table-row';
-      } else {
-        row.style.display = 'none';
-      }
-    }
-  });
+  federalOnly = !federalOnly;
+  updateTableRows();
 }
 
 function toggleCaliforniaOnly() {
-  const rows = document.querySelectorAll("tr");
+  californiaOnly = !californiaOnly;
+  updateTableRows();
+}
+
+function updateTableRows() {
+  console.log({federalOnly, californiaOnly});
+  const rows = document.querySelectorAll("tbody > tr");
   rows.forEach(row => {
-    const cell = row.querySelector("td[name='california'].text-error");
-    if (cell) { // Check if a matching cell exists in the row
-      if (row.style.display === 'none') {
-        row.style.display = 'table-row';
-      } else {
-        row.style.display = 'none';
-      }
+    const failsFederalTest =
+        row.querySelector("td[name='federal'].text-error") !== null;
+    const failsCaliforniaTest =
+        row.querySelector("td[name='california'].text-error") !== null;
+
+    // Determine whether to show or hide the row
+    if ((federalOnly && !failsFederalTest) ||
+        (californiaOnly && !failsCaliforniaTest)) {
+      row.style.display = 'table-row';
+    } else if (federalOnly || californiaOnly) {
+      row.style.display = 'none';
+    } else {
+      row.style.display = 'table-row'; // Show all rows if no filters are active
     }
   });
 }
