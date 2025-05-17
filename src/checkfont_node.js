@@ -5,11 +5,8 @@
 const ot = require('opentype.js');
 const fs = require('fs');
 
-// const testGlyphs = ['I', 'i', 'l', 'T', 'E'];
-const testGlyphs = [ 'A', 'E', 'H', 'B', 'G' ];
-
 function checkfont(opentype) {
-  var opentype = ot.loadSync(opentype);
+  var opentype = ot.loadSync(opentype); // NodeJS Specific
   const font = {
     name : opentype.names.fullName.en,
     weight : opentype.names.fontSubfamily.en,
@@ -141,6 +138,7 @@ function checkfont(opentype) {
   }
 
   function isSansSerif(font) {
+    // This is terrible practice
     const serifIndicators =
         [ /serif/gi, /times/gi, /georgia/gi, /garamond/gi, /baskerville/gi ];
     const sansSerifIndicators =
@@ -148,19 +146,22 @@ function checkfont(opentype) {
     const fontName = font.names.fullName.en.toLowerCase();
 
     if (serifIndicators.some(regex => regex.test(fontName))) {
-      console.log(`Metadata check: Classified as serif due to name "${
-          font.names.fullName.en}"`);
+      // console.log(`Metadata check: Classified as serif due to name "${
+      // font.names.fullName.en}"`);
       return false;
     }
     if (sansSerifIndicators.some(regex => regex.test(fontName))) {
-      console.log(`Metadata check: Classified as sans-serif due to name "${
-          font.names.fullName.en}"`);
+      // console.log(`Metadata check: Classified as sans-serif due to name "${
+      // font.names.fullName.en}"`);
       return true;
     }
 
     let serifLikeCount = 0;
     let totalChecked = 0;
     const debugInfo = {};
+
+    // const testGlyphs = ['I', 'i', 'l', 'T', 'E'];
+    const testGlyphs = [ 'A', 'E', 'H', 'B', 'G' ];
 
     for (let char of testGlyphs) {
       let glyph;
@@ -186,8 +187,8 @@ function checkfont(opentype) {
       totalChecked++;
     }
 
-    console.log(`isSansSerif Debug for ${font.names.fullName.en}:`, debugInfo,
-                {serifLikeCount, totalChecked});
+    // console.log(`isSansSerif Debug for ${font.names.fullName.en}:`,
+    // debugInfo, {serifLikeCount, totalChecked});
     return serifLikeCount / totalChecked < 0.3;
   }
 
@@ -235,10 +236,9 @@ function checkfont(opentype) {
       const topRatio = topWidth / glyphWidth;
       const bottomRatio = bottomWidth / glyphWidth;
 
-      console.log(`Stem at x=${stem.x}: topRatio=${topRatio}, bottomRatio=${
-          bottomRatio}, topPoints=${topPoints.length}, bottomPoints=${
-          bottomPoints.length}`);
-
+      // console.log(`Stem at x=${stem.x}: topRatio=${topRatio}, bottomRatio=${
+      // bottomRatio}, topPoints=${topPoints.length}, bottomPoints=${
+      // bottomPoints.length}`);
       const hasRatioMatch = (topRatio >= 0.15 && topRatio <= 0.35) ||
                             (bottomRatio >= 0.15 && bottomRatio <= 0.35);
 
@@ -252,8 +252,8 @@ function checkfont(opentype) {
           const dy = Math.abs(c1.y - c2.y);
           if (dy < 5 && dx > 10 && dx < glyphWidth * 0.2 &&
               (Math.abs(c1.y - yTop) < 10 || Math.abs(c1.y - yBottom) < 10)) {
-            console.log(`Horizontal segment detected: dx=${dx}, dy=${dy}, c1=${
-                JSON.stringify(c1)}, c2=${JSON.stringify(c2)}`);
+            // console.log(`Horizontal segment detected: dx=${dx}, dy=${dy},
+            // c1=${ JSON.stringify(c1)}, c2=${JSON.stringify(c2)}`);
             hasHorizontalSegment = true;
             break;
           }
@@ -261,7 +261,7 @@ function checkfont(opentype) {
       }
 
       if (hasRatioMatch && hasHorizontalSegment) {
-        console.log(`Serif confirmed for stem at x=${stem.x}`);
+        // console.log(`Serif confirmed for stem at x=${stem.x}`);
         count++;
       }
     }
@@ -330,12 +330,10 @@ function checkfont(opentype) {
                     font.body.ratio, font.california.visual.min,
                     font.california.visual.max, font.stroke.ratio);
 
-  console.log(font.name + "\n" +
-              "sansSerif: " + font.test.sansSerif + "\n");
+  console.log(font); // NodeJS Specific
   return font;
 }
 
-// checkfont('../Fonts/Roboto/Roboto-Regular.ttf');
 //  Get the file path from the command-line arguments
 for (let i = 2; i < process.argv.length; i++) {
   const filePath = process.argv[i];
