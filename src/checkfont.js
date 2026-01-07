@@ -4,6 +4,7 @@
 
 function checkfont(opentype) {
   const font = {
+    original: opentype,
     name : opentype.names.fullName.en,
     weight : opentype.names.fontSubfamily.en,
     i : {
