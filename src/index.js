@@ -218,8 +218,11 @@ function updateTableRows() {
   });
 }
 
+let currentFontIndex = -1;
+
 // Visualization Logic
 window.showVisualization = function(index) {
+  currentFontIndex = index;
   const result = window.processedFonts[index];
   if (!result) return;
   
@@ -233,6 +236,171 @@ window.showVisualization = function(index) {
   updateInfo('info-i', result.i);
   updateInfo('info-h', result.h);
   updateInfo('info-o', result.o);
+}
+
+window.printReport = function() {
+  if (currentFontIndex === -1) return;
+  const result = window.processedFonts[currentFontIndex];
+  
+  const canvasI = document.getElementById('canvas-i').toDataURL('image/png');
+  const canvasH = document.getElementById('canvas-h').toDataURL('image/png');
+  const canvasO = document.getElementById('canvas-o').toDataURL('image/png');
+  
+  function getPoints(char) {
+      if (!result.original) return '';
+      const path = result.original.getPath(char, 0, 150, 72);
+      return path.commands.filter(c => c.x !== undefined && c.y !== undefined)
+          .map(c => `(${Math.round(c.x)}, ${Math.round(c.y)})`).join(', ');
+  }
+
+  const ptsI = getPoints('I');
+  const ptsH = getPoints('H');
+  const ptsO = getPoints('O');
+  
+  const w = window.open('', '_blank');
+  w.document.write(`
+    <html>
+    <head>
+      <title>ADAFontCheck Report - ${result.name}</title>
+      <style>
+        body { font-family: sans-serif; font-size: 12px; padding: 20px; max-width: 800px; margin: 0 auto; }
+        h1 { margin-bottom: 5px; font-size: 18px; }
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; align-items: flex-end; }
+        .timestamp { font-size: 0.9em; color: #666; }
+        .watermark { font-weight: bold; font-size: 14px; }
+        .watermark a { color: #0369a1; text-decoration: none; }
+        .disclaimer { font-size: 0.75em; color: #777; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; line-height: 1.3; }
+        .compliance { font-size: 0.75em; color: #555; margin-top: 10px; line-height: 1.3; }
+        .compliance a { color: #0369a1; }
+        .section { margin-bottom: 15px; display: flex; align-items: flex-start; gap: 20px; border-bottom: 1px solid #f0f0f0; padding-bottom: 15px; break-inside: avoid; }
+        .canvas-container { text-align: center; }
+        .canvas-img { border: 1px solid #ddd; width: 140px; height: 140px; object-fit: contain; background: #fff; }
+        .glyph-label { font-weight: bold; font-size: 16px; margin-top: 5px; }
+        .metrics { flex: 1; }
+        .coords-label { font-weight: bold; margin-top: 5px; display: block; font-size: 0.9em; }
+        .coords { font-family: monospace; font-size: 0.85em; color: #444; word-break: break-all; line-height: 1.4; }
+        .status-pass { color: green; font-weight: bold; }
+        .status-fail { color: red; font-weight: bold; }
+        .results-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .results-table th, .results-table td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; font-size: 11px; }
+        .results-table th { background: #f2f2f2; }
+        .req-info { font-weight: normal; font-size: 0.85em; color: #666; display: block; margin-top: 2px; }
+        @media print {
+            body { padding: 0; }
+            button { display: none; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div>
+            <h1>${result.name}</h1>
+            <div class="timestamp">${new Date().toLocaleString()}</div>
+        </div>
+        <div class="watermark"><a href="https://adafontcheck.xyz">adafontcheck.xyz</a></div>
+      </div>
+      
+      <div class="results">
+        <h3 style="margin-top:0;">Compliance Summary</h3>
+        <table class="results-table">
+            <tr>
+                <th>Test</th>
+                <th>Federal Requirements</th>
+                <th>California Requirements</th>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Tactile</strong><br>
+                    <small>Measured - Stroke: ${result.stroke.ratio}%, Body: ${result.body.ratio}%</small>
+                </td>
+                <td class="${result.test.federal.tactile ? 'status-pass' : 'status-fail'}">
+                    ${result.test.federal.tactile ? 'PASS' : 'FAIL'}
+                    <span class="req-info">Body: 55-110%, Stroke: 0-15%</span>
+                </td>
+                <td class="${result.test.california.tactile ? 'status-pass' : 'status-fail'}">
+                    ${result.test.california.tactile ? 'PASS' : 'FAIL'}
+                    <span class="req-info">Body: 60-110%, Stroke: 0-15%</span>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>Visual</strong><br>
+                    <small>Measured - Stroke: ${result.stroke.ratio}%, Body: ${result.body.ratio}%</small>
+                </td>
+                <td class="${result.test.federal.visual ? 'status-pass' : 'status-fail'}">
+                    ${result.test.federal.visual ? 'PASS' : 'FAIL'}
+                    <span class="req-info">Body: 55-110%, Stroke: 10-30%</span>
+                </td>
+                <td class="${result.test.california.visual ? 'status-pass' : 'status-fail'}">
+                    ${result.test.california.visual ? 'PASS' : 'FAIL'}
+                    <span class="req-info">Body: 60-110%, Stroke: 10-20%</span>
+                </td>
+            </tr>
+        </table>
+      </div>
+
+      <div class="section">
+        <div class="canvas-container">
+            <img src="${canvasI}" class="canvas-img">
+            <div class="glyph-label">I</div>
+        </div>
+        <div class="metrics">
+            <strong>Stroke Width Ratio:</strong> ${result.i.ratio}% <br>
+            Width: ${result.i.width ? result.i.width.toFixed(2) : 'N/A'}, Height: ${result.i.height ? result.i.height.toFixed(2) : 'N/A'}
+            <span class="coords-label">Coordinates (Green Dots):</span>
+            <div class="coords">${ptsI}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="canvas-container">
+            <img src="${canvasH}" class="canvas-img">
+             <div class="glyph-label">H</div>
+        </div>
+        <div class="metrics">
+            <strong>Body Width Ratio:</strong> ${result.h.ratio}% <br>
+            Width: ${result.h.width ? result.h.width.toFixed(2) : 'N/A'}, Height: ${result.h.height ? result.h.height.toFixed(2) : 'N/A'}
+            <span class="coords-label">Coordinates (Green Dots):</span>
+            <div class="coords">${ptsH}</div>
+        </div>
+      </div>
+
+      <div class="section" style="border-bottom: none;">
+        <div class="canvas-container">
+            <img src="${canvasO}" class="canvas-img">
+             <div class="glyph-label">O</div>
+        </div>
+        <div class="metrics">
+            <strong>Body Width Ratio:</strong> ${result.o.ratio}% <br>
+            Width: ${result.o.width ? result.o.width.toFixed(2) : 'N/A'}, Height: ${result.o.height ? result.o.height.toFixed(2) : 'N/A'}
+            <span class="coords-label">Coordinates (Green Dots):</span>
+            <div class="coords">${ptsO}</div>
+        </div>
+      </div>
+
+      <div class="disclaimer">
+        <strong>Disclaimer:</strong> ADAFontCheck is not endorsed by the United States Access Board or anyone else. The creators of ADAFontCheck assume no liability or responsibility whatsoever for any direct, indirect, special, or other consequential damages relating to any use of this online service or the contents of this website. Use at your own discretion with confidence.
+      </div>
+      
+      <div class="compliance">
+        This service is based on <a href="https://archive.ada.gov/regs2010/2010ADAStandards/2010ADAStandards.pdf">2010 Americans with Disabilities Act Accessibility Guidelines</a> and <a href="https://up.codes/viewer/california/ibc-2018/chapter/new_11B/accessibility-to-public-buildings-public-accommodations-commercial-buildings-and#new_11B-703">2019 California Building Standards Code</a>.
+      </div>
+
+      <div style="margin-top: 30px; text-align: center; font-size: 0.8em; color: #555; padding: 10px; border-top: 1px solid #ddd;">
+        Copyright © 2026 - All rights reserved by Crooks Design.
+      </div>
+
+      <script>
+        window.onload = function() { 
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        }
+      </script>
+    </body>
+    </html>
+  `);
+  w.document.close();
 }
 
 function updateInfo(id, metrics) {
