@@ -239,7 +239,7 @@ function updateInfo(id, metrics) {
     const el = document.getElementById(id);
     if(el) {
         el.innerHTML = `
-            <div class="grid grid-cols-2 gap-1">
+            <div class="grid grid-cols-2 gap-1" style="grid-template-columns: auto 1fr; gap: 0 1em;">
                 <span>Width:</span> <span class="font-mono text-right">${metrics.width ? metrics.width.toFixed(2) : 'N/A'}</span>
                 <span>Height:</span> <span class="font-mono text-right">${metrics.height ? metrics.height.toFixed(2) : 'N/A'}</span>
                 <span>Ratio:</span> <span class="font-mono text-right font-bold">${metrics.ratio ? metrics.ratio + '%' : 'N/A'}</span>
