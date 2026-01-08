@@ -1,4 +1,7 @@
 # ADAFontCheck
+
+![](media/adafc_promo.mp4)
+
 ADAFontCheck uses [opentype.js](opentype.js.org) to [analyze font glyphs](opentype.js.org/glyph-inspector.html) and determine if the font metrics meet American Disability Association requirements.
 
 ## Demo Link -> [adafontcheck.xyz](https://adafontcheck.xyz/)
