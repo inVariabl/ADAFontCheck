@@ -6,7 +6,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "express-fileupload": "^1.1.5",
-    "fast-csv": "^2.4.1",
+    "fast-csv": "^4.3.6",
     "glob": "^7.1.4",
     "minify": "^10.0.0",
     "opentype.js": "^0.10.0",
