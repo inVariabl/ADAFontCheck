@@ -383,7 +383,7 @@ window.printReport = function() {
       </div>
       
       <div class="compliance">
-        This service is based on <a href="https://archive.ada.gov/regs2010/2010ADAStandards/2010ADAStandards.pdf">2010 Americans with Disabilities Act Accessibility Guidelines</a> and <a href="https://up.codes/viewer/california/ibc-2018/chapter/new_11B/accessibility-to-public-buildings-public-accommodations-commercial-buildings-and#new_11B-703">2019 California Building Standards Code</a>.
+        This service is based on the <a href="https://archive.ada.gov/regs2010/2010ADAStandards/2010ADAStandards.pdf">2010 Americans with Disabilities Act Accessibility Guidelines (703.2.4, 703.2.6, 703.5.4, 703.5.7)</a>, the <a href="https://www.access-board.gov/prowag/supplemental.html#r410-visual-characters-on-signs">U.S. Access Board PROWAG section R410 Visual Characters on Signs (410.1, 410.3, 410.4, 410.5, 410.7)</a>, and the <a href="https://up.codes/viewer/california/ibc-2018/chapter/new_11B/accessibility-to-public-buildings-public-accommodations-commercial-buildings-and#new_11B-703">2019 California Building Standards Code (11B-703.2.4 / 1143A.6.4, 11B-703.2.6 / 1143.A.6.5, 11B-703.5.4 / 1143.A.5.3, 11B-703.5.7 / 1143A.5.6)</a>.
       </div>
 
       <div style="margin-top: 30px; text-align: center; font-size: 0.8em; color: #555; padding: 10px; border-top: 1px solid #ddd;">
