@@ -1,5 +1,24 @@
 window.processedFonts = [];
 
+function deriveFontMetadataFromFilename(filename) {
+  const baseName = filename.replace(/\.[^.]+$/, '');
+  const styleMatch =
+      baseName.match(/-(Thin|ExtraLight|Light|Regular|Medium|SemiBold|Bold|ExtraBold|Black|Italic|BoldItalic|LightItalic|MediumItalic|SemiBoldItalic|ExtraBoldItalic|ExtraLightItalic|BlackItalic)$/i);
+
+  if (!styleMatch) {
+    return {name : baseName, weight : 'Regular'};
+  }
+
+  const rawWeight = styleMatch[1];
+  const family = baseName.slice(0, -styleMatch[0].length) || baseName;
+  const weight = rawWeight.replace(/([a-z])([A-Z])/g, '$1 $2');
+
+  return {
+    name : `${family.replace(/([a-z])([A-Z])/g, '$1 $2')} ${weight}`.trim(),
+    weight,
+  };
+}
+
 const folder = document.querySelector('input[name="folder"]');
 const file = document.querySelector('input[name="file"]');
 if (folder) {
@@ -18,7 +37,12 @@ function onReadFolder(e) {
     reader.onload = function(e) {
       try {
         const font = opentype.parse(e.target.result);
-        const result = checkfont(font); 
+        const result = checkfont(font);
+        if (result.name === 'Unknown Font') {
+          const fallbackMeta = deriveFontMetadataFromFilename(file.name);
+          result.name = fallbackMeta.name;
+          result.weight = fallbackMeta.weight;
+        }
         window.processedFonts.push(result);
         const fontIndex = window.processedFonts.length - 1;
 
@@ -78,10 +102,10 @@ function onReadFolder(e) {
           `;
           document.getElementById('data').innerHTML += html;
         } catch (err) {
-          console.error("HTML Insertion Error");
+          console.error('HTML insertion error', err);
         }
       } catch (err) {
-        console.error('onRead error');
+        console.error(`Font processing failed for "${file.name}"`, err);
       }
     };
     reader.readAsArrayBuffer(file);

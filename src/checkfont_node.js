@@ -7,9 +7,42 @@ const fs = require('fs');
 
 function checkfont(opentype) {
   var opentype = ot.loadSync(opentype); // NodeJS Specific
+  function getNameEntry(nameTable, fallback) {
+    if (typeof nameTable === 'string' && nameTable.trim()) {
+      return nameTable;
+    }
+    if (!nameTable || typeof nameTable !== 'object') {
+      return fallback;
+    }
+    if (typeof nameTable.en === 'string' && nameTable.en.trim()) {
+      return nameTable.en;
+    }
+
+    const firstAvailable = Object.values(nameTable).find(
+        value => typeof value === 'string' && value.trim());
+    return firstAvailable || fallback;
+  }
+
+  function getFirstNameEntry(keys, fallback) {
+    for (const key of keys) {
+      const value = getNameEntry(opentype.names && opentype.names[key], '');
+      if (value) {
+        return value;
+      }
+    }
+    return fallback;
+  }
+
+  const family = getFirstNameEntry(
+      [ 'preferredFamily', 'fontFamily', 'fullName', 'postScriptName' ],
+      'Unknown Font');
+  const subfamily =
+      getFirstNameEntry([ 'preferredSubfamily', 'fontSubfamily' ], 'Regular');
+  const fullName = family === 'Unknown Font' ? family : `${family} ${subfamily}`.trim();
+
   const font = {
-    name : opentype.names.fullName.en,
-    weight : opentype.names.fontSubfamily.en,
+    name : fullName,
+    weight : subfamily,
     i : {
       x : [],
       y : [],
@@ -87,7 +120,7 @@ function checkfont(opentype) {
   };
 
   function not_italicTest() {
-    return !/italic/gi.test(opentype.names.fontSubfamily.en);
+    return !/italic/gi.test(subfamily);
   }
 
   /* Stroke Width / Height Ratio Test */
@@ -143,7 +176,7 @@ function checkfont(opentype) {
         [ /serif/gi, /times/gi, /georgia/gi, /garamond/gi, /baskerville/gi ];
     const sansSerifIndicators =
         [ /sans/gi, /helvetica/gi, /arial/gi, /verdana/gi, /futura/gi ];
-    const fontName = font.names.fullName.en.toLowerCase();
+    const fontName = getNameEntry(font.names.fullName, '').toLowerCase();
 
     if (serifIndicators.some(regex => regex.test(fontName))) {
       // console.log(`Metadata check: Classified as serif due to name "${
@@ -196,7 +229,7 @@ function checkfont(opentype) {
     const stems = [];
     const unitsPerEm = font.unitsPerEm || 1000;
     const minHeight = unitsPerEm * 0.05;
-    const maxWidth = /italic/gi.test(font.names.fontSubfamily.en)
+    const maxWidth = /italic/gi.test(getNameEntry(font.names.fontSubfamily, ''))
                          ? unitsPerEm * 0.03
                          : unitsPerEm * 0.01;
 
