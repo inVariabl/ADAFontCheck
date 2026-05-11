@@ -73,8 +73,11 @@ function onReadFolder(e) {
           html = `
             <tr>
               <td>
-                <button class="btn btn-ghost btn-sm normal-case font-normal p-0 hover:bg-transparent hover:underline hover:text-primary text-left h-auto min-h-0" style="text-transform: none;" onclick="showVisualization(${fontIndex})">
-                  ${result.name}
+                <button class="font-inspector-trigger" type="button" onclick="showVisualization(${fontIndex})" title="Open glyph inspector" aria-label="Open glyph inspector for ${result.name}" data-tooltip="Open glyph inspector">
+                  <span class="font-inspector-label">${result.name}</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="font-inspector-icon" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 4.24 11.998l4.256 4.256a.75.75 0 1 0 1.06-1.06l-4.255-4.256A6.75 6.75 0 0 0 10.5 3.75Zm-5.25 6.75a5.25 5.25 0 1 1 10.5 0 5.25 5.25 0 0 1-10.5 0Z" clip-rule="evenodd" />
+                  </svg>
                 </button>
               </td>
               <td>${result.body.ratio}%</td>

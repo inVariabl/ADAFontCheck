@@ -3027,3 +3027,71 @@ th {
   width: 1em;
   height: 1em;
 }
+
+.font-inspector-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0;
+  min-height: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  text-transform: none;
+  cursor: pointer;
+}
+
+.font-inspector-label {
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.16em;
+  transition: color 150ms ease, text-decoration-color 150ms ease;
+}
+
+.font-inspector-icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  opacity: 0.65;
+  flex-shrink: 0;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.font-inspector-trigger:hover,
+.font-inspector-trigger:focus-visible {
+  color: #075985;
+  outline: none;
+}
+
+.font-inspector-trigger:hover .font-inspector-label,
+.font-inspector-trigger:focus-visible .font-inspector-label {
+  text-decoration-color: currentColor;
+}
+
+.font-inspector-trigger:hover .font-inspector-icon,
+.font-inspector-trigger:focus-visible .font-inspector-icon {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.font-inspector-trigger:focus-visible::after,
+.font-inspector-trigger:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 0.45rem);
+  transform: translateX(-50%);
+  padding: 0.3rem 0.55rem;
+  border-radius: 0.35rem;
+  background: hsl(var(--n));
+  color: hsl(var(--nc));
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.15);
+}
