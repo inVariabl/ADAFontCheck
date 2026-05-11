@@ -2797,10 +2797,31 @@ html {
   border-bottom-right-radius: var(--rounded-box, 1rem);
 }
 
-.table-compact :where(th, td) {
-  padding: 0.5rem;
+.table-compact :where(thead th, thead td) {
+  padding: 0.45rem 0.65rem;
   font-size: 0.875rem;
-  line-height: 1.25rem;
+  line-height: 1.2rem;
+}
+
+.table-compact :where(tbody th, tbody td) {
+  padding: 0.4rem 0.65rem;
+  font-size: 0.8125rem;
+  line-height: 1.1rem;
+}
+
+.table-compact :where(tbody td) svg.w-6,
+.table-compact :where(tbody th) svg.w-6 {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.table-compact .font-inspector-trigger {
+  gap: 0.3rem;
+}
+
+.table-compact .font-inspector-icon {
+  width: 0.875rem;
+  height: 0.875rem;
 }
 
 .relative {
