@@ -34,6 +34,17 @@ ADAFontCheck perfoms the following tests:
 5. Review the test results. _Note that results appear for Sans Serif fonts only. Fonts that are not Sans Serif do not comply with ADA requirements._
 6. Export the tests results.
 
+## SvelteKit + Web Worker + C WASM branch
+This branch runs ADAFontCheck as a SvelteKit static app. Font parsing and glyph metric extraction happen in a Web Worker, while ratio and ADA threshold checks are delegated to a small C module compiled to WebAssembly.
+
+```sh
+npm install
+npm run dev
+npm run build
+```
+
+The WASM module is built by `npm run wasm` from `src/wasm/ada_metrics.c` into `src/lib/wasm/ada_metrics.wasm`. The `dev` and `build` scripts run this automatically before Vite starts.
+
 ## ADAFontCheck Compliance Information
 This service is based on the 2010 Americans with Disabilities Act Accessibility Guidelines (703.2.4, 703.2.6, 703.5.4, 703.5.7), the U.S. Access Board PROWAG section R410 Visual Characters on Signs (410.1, 410.3, 410.4, 410.5, 410.7), and the 2019 California Building Standards Code (11B-703.2.4 / 1143A.6.4, 11B-703.2.6 / 1143.A.6.5, 11B-703.5.4 / 1143.A.5.3, 11B-703.5.7 / 1143A.5.6).
 

@@ -1,33 +1,37 @@
 {
   "name": "adafontcheck",
-  "version": "1.1.0",
+  "version": "2.0.0-svelte-c",
   "description": "Determine if a font meets ADA requirements",
-  "main": "mk1.js",
-  "dependencies": {
-    "express": "^4.17.1",
-    "express-fileupload": "^1.1.5",
-    "fast-csv": "^2.4.1",
-    "glob": "^7.1.4",
-    "minify": "^10.0.0",
-    "opentype.js": "^0.10.0",
-    "package.json": "^2.0.1",
-    "path": "^0.12.7"
-  },
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node checkfont_node.js",
-    "build": "npx @tailwindcss/cli -i ./src/style.css -o ./dist/style.css"
+    "predev": "npm run wasm",
+    "dev": "vite dev --host 0.0.0.0",
+    "prebuild": "npm run wasm",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "precheck": "npm run wasm",
+    "check": "svelte-kit sync && svelte-check --threshold warning",
+    "wasm": "node scripts/build-wasm.mjs"
   },
   "keywords": [
     "ADA",
     "font",
     "opentype",
-    "truetype"
+    "truetype",
+    "sveltekit",
+    "wasm"
   ],
   "author": "Daniel Crooks",
   "license": "ISC",
+  "dependencies": {
+    "@sveltejs/adapter-static": "^3.0.8",
+    "@sveltejs/kit": "^2.22.0",
+    "@sveltejs/vite-plugin-svelte": "^5.1.0",
+    "opentype.js": "^1.3.4",
+    "svelte": "^5.34.3",
+    "vite": "^6.3.5"
+  },
   "devDependencies": {
-    "daisyui": "^5.0.37",
-    "tailwindcss": "^3.3.2"
+    "svelte-check": "^4.2.1"
   }
 }
