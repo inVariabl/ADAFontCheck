@@ -13,6 +13,7 @@ function compile(input, output, exports) {
     '-nostdlib',
     `-I${wasmDir}`,
     '-Wl,--no-entry',
+    '-Wl,--initial-memory=12582912',
     ...exports.map((e) => `-Wl,--export=${e}`),
     '-Wl,--allow-undefined',
     '-o', output,

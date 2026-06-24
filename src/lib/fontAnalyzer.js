@@ -228,6 +228,9 @@ function analyzeGlyph(font, letter, ratioPercent, options = {}) {
 }
 
 export async function analyzeFontFile(file, adaMetrics) {
+  if (file.buffer.byteLength > 10 * 1024 * 1024) {
+    return { fileName: file.name, error: 'Font too large (>10MB)' };
+  }
   const font = parse(file.buffer);
   const family = getFirstNameEntry(
     font,

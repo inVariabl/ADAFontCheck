@@ -34,7 +34,7 @@ void free(void *p) { (void)p; }
 
 #define MAX_NAME 256
 #define MAX_COORDS 64
-#define FONT_BUF_SIZE (1024 * 1024)
+#define FONT_BUF_SIZE (8 * 1024 * 1024)
 #define RESULT_SIZE 4096
 
 static unsigned char font_data[FONT_BUF_SIZE];
@@ -72,7 +72,7 @@ static int macroman_to_ascii(const unsigned char *src, int src_len, char *dst, i
   int di = 0;
   for (int si = 0; si < src_len && di < dst_max - 1; si++) {
     unsigned char ch = src[si];
-    if (ch < 128) dst[di++] = (char)ch;
+    if (ch >= 32 && ch < 127) dst[di++] = (char)ch;
   }
   dst[di] = 0;
   return di;
@@ -272,6 +272,8 @@ int analyze_font(int data_size) {
   stbtt_fontinfo font;
   int offset = stbtt_GetFontOffsetForIndex(font_data, 0);
   if (offset < 0) { out->error = -1; return -1; }
+  if (stbtt__find_table(font_data, offset, "CFF2")) { out->error = -4; return -4; }
+  if (stbtt__find_table(font_data, offset, "fvar")) { out->error = -3; return -3; }
   if (!stbtt_InitFont(&font, font_data, offset)) { out->error = -1; return -1; }
   get_name_entry(&font, 1, out->name, 256);
   get_name_entry(&font, 2, out->subfamily, 256);

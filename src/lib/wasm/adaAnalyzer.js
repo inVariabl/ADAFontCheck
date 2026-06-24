@@ -57,14 +57,19 @@ export async function analyzeFont(buffer) {
   const resultPtr = exports.get_result_ptr();
 
   const data = new Uint8Array(buffer);
-  if (data.length > 1024 * 1024) {
-    return { error: 'Font too large (>1MB)' };
+  if (data.length > 8 * 1024 * 1024) {
+    return { error: 'Font too large (>8MB)' };
   }
 
   new Uint8Array(memory.buffer, fontPtr, data.length).set(data);
   const ret = exports.analyze_font(data.length);
   if (ret !== 0) {
-    return { error: 'Failed to parse font' };
+    const errors = {
+      [-1]: 'Failed to parse font',
+      [-3]: 'Variable font (not supported)',
+      [-4]: 'CFF2 font (not supported)'
+    };
+    return { error: errors[ret] || 'Failed to parse font' };
   }
 
   const view = new DataView(memory.buffer, resultPtr);
