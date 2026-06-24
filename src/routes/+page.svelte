@@ -61,10 +61,10 @@
     if (result.error) {
       return true;
     }
-    if (federalOnly && result.test.federal.tactile && result.test.federal.visual) {
+    if (federalOnly && (!result.test.federal.tactile || !result.test.federal.visual)) {
       return false;
     }
-    if (californiaOnly && result.test.california.tactile && result.test.california.visual) {
+    if (californiaOnly && (!result.test.california.tactile || !result.test.california.visual)) {
       return false;
     }
     return true;
