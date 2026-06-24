@@ -2,6 +2,7 @@
   import { onDestroy } from 'svelte';
   import { downloadResultsCsv } from '$lib/csv.js';
   import MetricList from '$lib/MetricList.svelte';
+  import { parse } from 'opentype.js';
   import './styles.css';
 
   const columns = [
@@ -46,6 +47,7 @@
   let processed = 0;
   let total = 0;
   let processing = false;
+  let fontBuffers = new Map();
   let compact = false;
   let darkMode = false;
   let federalOnly = false;
@@ -59,12 +61,10 @@
     if (result.error) {
       return true;
     }
-    const failsFederal = !result.test.federal.tactile || !result.test.federal.visual;
-    const failsCalifornia = !result.test.california.tactile || !result.test.california.visual;
-    if (federalOnly && !failsFederal) {
+    if (federalOnly && result.test.federal.tactile && result.test.federal.visual) {
       return false;
     }
-    if (californiaOnly && !failsCalifornia) {
+    if (californiaOnly && result.test.california.tactile && result.test.california.visual) {
       return false;
     }
     return true;
@@ -103,38 +103,43 @@
     results = [];
     errors = [];
     selected = null;
+    fontBuffers = new Map();
 
     const id = (requestId += 1);
-    const payload = await Promise.all(
-      files.map(async (file) => ({
-        name: file.name,
-        buffer: await file.arrayBuffer()
-      }))
-    );
+    const BATCH_SIZE = 50;
+    const fileArray = Array.from(files);
+    let allResults = [];
 
-    getWorker().onmessage = (event) => {
-      if (event.data.id !== id) {
-        return;
+    for (let i = 0; i < fileArray.length; i += BATCH_SIZE) {
+      const batch = fileArray.slice(i, i + BATCH_SIZE);
+
+      const payload = await Promise.all(
+        batch.map(async (file) => ({
+          name: file.name,
+          buffer: await file.arrayBuffer()
+        }))
+      );
+
+      for (const f of payload) {
+        fontBuffers.set(f.name, f.buffer.slice(0));
       }
 
-      if (event.data.type === 'progress') {
-        processed = event.data.processed;
-        total = event.data.total;
-      }
+      const batchResults = await new Promise((resolve, reject) => {
+        getWorker().onmessage = (event) => {
+          if (event.data.id !== id) return;
+          if (event.data.type === 'complete') resolve(event.data.results);
+          if (event.data.type === 'error') reject(new Error(event.data.error));
+        };
+        getWorker().postMessage({ id, files: payload }, payload.map((f) => f.buffer));
+      });
 
-      if (event.data.type === 'complete') {
-        results = event.data.results;
-        errors = results.filter((result) => result.error);
-        processing = false;
-      }
+      allResults = allResults.concat(batchResults);
+      processed = allResults.length;
+    }
 
-      if (event.data.type === 'error') {
-        errors = [{ fileName: 'Worker', error: event.data.error }];
-        processing = false;
-      }
-    };
-
-    getWorker().postMessage({ id, files: payload }, payload.map((file) => file.buffer));
+    results = allResults;
+    errors = results.filter((result) => result.error);
+    processing = false;
   }
 
   function clearFonts() {
@@ -143,10 +148,33 @@
     processed = 0;
     total = 0;
     selected = null;
+    fontBuffers = new Map();
   }
 
   function showInspector(result) {
     if (result.error) {
+      return;
+    }
+    const buffer = fontBuffers.get(result.fileName);
+    if (!buffer) {
+      return;
+    }
+    try {
+      const font = parse(buffer);
+      const chars = ['I', 'H', 'O'];
+      for (const char of chars) {
+        const path = font.getPath(char, 0, 150, 72);
+        const commands = path.commands.map((cmd) => {
+          const c = { type: cmd.type };
+          for (const key of ['x', 'y', 'x1', 'y1', 'x2', 'y2']) {
+            if (cmd[key] !== undefined) c[key] = cmd[key];
+          }
+          return c;
+        });
+        const key = char.toLowerCase();
+        result[key].commands = commands;
+      }
+    } catch (e) {
       return;
     }
     selected = result;
@@ -170,11 +198,16 @@
       return;
     }
 
+    const dpr = window.devicePixelRatio || 1;
+    const displayWidth = canvas.clientWidth || 280;
+    const displayHeight = canvas.clientHeight || 280;
+    canvas.width = displayWidth * dpr;
+    canvas.height = displayHeight * dpr;
+
     const ctx = canvas.getContext('2d');
-    const width = canvas.width;
-    const height = canvas.height;
-    ctx.clearRect(0, 0, width, height);
-    drawGrid(ctx, width, height);
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, displayWidth, displayHeight);
+    drawGrid(ctx, displayWidth, displayHeight);
 
     const xs = metrics.x?.length ? metrics.x : metrics.commands.map((command) => command.x).filter(Number.isFinite);
     const ys = metrics.y?.length ? metrics.y : metrics.commands.map((command) => command.y).filter(Number.isFinite);
@@ -197,10 +230,10 @@
     const cx = minX + glyphWidth / 2;
     const cy = minY + glyphHeight / 2;
     const padding = 70;
-    const scale = Math.min((width - padding) / glyphWidth, (height - padding) / glyphHeight, 20);
+    const scale = Math.min((displayWidth - padding) / glyphWidth, (displayHeight - padding) / glyphHeight, 20);
 
     ctx.save();
-    ctx.translate(width / 2, height / 2);
+    ctx.translate(displayWidth / 2, displayHeight / 2);
     ctx.scale(scale, scale);
     ctx.translate(-cx, -cy);
 
@@ -346,12 +379,12 @@
           <table>
             <tr><th>Test</th><th>Federal</th><th>California</th></tr>
             <tr>
-              <td>Tactile<br><span class="small">Stroke ${selected.stroke.ratio}%, Body ${selected.body.ratio}%</span></td>
+              <td>Tactile<br><span class="small">Stroke ${selected.stroke.ratio.toFixed(2)}%, Body ${selected.body.ratio.toFixed(2)}%</span></td>
               <td class="${selected.test.federal.tactile ? 'pass' : 'fail'}">${selected.test.federal.tactile ? 'PASS' : 'FAIL'}<br><span class="small">Body 55-110%, Stroke 0-15%</span></td>
               <td class="${selected.test.california.tactile ? 'pass' : 'fail'}">${selected.test.california.tactile ? 'PASS' : 'FAIL'}<br><span class="small">Body 60-110%, Stroke 0-15%</span></td>
             </tr>
             <tr>
-              <td>Visual<br><span class="small">Stroke ${selected.stroke.ratio}%, Body ${selected.body.ratio}%</span></td>
+              <td>Visual<br><span class="small">Stroke ${selected.stroke.ratio.toFixed(2)}%, Body ${selected.body.ratio.toFixed(2)}%</span></td>
               <td class="${selected.test.federal.visual ? 'pass' : 'fail'}">${selected.test.federal.visual ? 'PASS' : 'FAIL'}<br><span class="small">Body 55-110%, Stroke 10-30%</span></td>
               <td class="${selected.test.california.visual ? 'pass' : 'fail'}">${selected.test.california.visual ? 'PASS' : 'FAIL'}<br><span class="small">Body 60-110%, Stroke 10-20%</span></td>
             </tr>
@@ -363,7 +396,7 @@
                 <img src="${image}" class="canvas-img" alt="${letter}">
                 <div>
                   <h2>${letter}</h2>
-                  <div>Width: ${metric.width.toFixed(2)} | Height: ${metric.height.toFixed(2)} | Ratio: ${metric.ratio}%</div>
+                  <div>Width: ${metric.width.toFixed(2)} | Height: ${metric.height.toFixed(2)} | Ratio: ${metric.ratio.toFixed(2)}%</div>
                   <div class="coords">${points(metric)}</div>
                 </div>
               </div>`
@@ -422,8 +455,8 @@
       <div class="settings" aria-label="Display settings">
         <label><input type="checkbox" bind:checked={compact} /> Compact</label>
         <label><input type="checkbox" bind:checked={darkMode} /> Dark</label>
-        <label><input type="checkbox" bind:checked={federalOnly} /> Federal fails</label>
-        <label><input type="checkbox" bind:checked={californiaOnly} /> California fails</label>
+        <label><input type="checkbox" bind:checked={californiaOnly} /> California only</label>
+        <label><input type="checkbox" bind:checked={federalOnly} /> Federal only</label>
       </div>
     </section>
 
@@ -471,8 +504,8 @@
                       <span class="inspect-badge" aria-hidden="true">Inspect</span>
                     </button>
                   </td>
-                  <td>{result.body.ratio}%</td>
-                  <td>{result.stroke.ratio}%</td>
+                  <td>{result.body.ratio.toFixed(2)}%</td>
+                  <td>{result.stroke.ratio.toFixed(2)}%</td>
                   {#each columns as column}
                     {@const passed = column.get(result)}
                     <td class:pass={passed} class:fail={!passed} data-region={column.region}>
@@ -489,6 +522,39 @@
           {/if}
         </tbody>
       </table>
+    </section>
+
+    <section class="result-cards" aria-live="polite">
+      {#if visibleResults.length}
+        {#each visibleResults as result}
+          {#if result.error}
+            <div class="card-error">
+              <strong>{result.fileName}</strong>: {result.error}
+            </div>
+          {:else}
+            <div class="result-card">
+              <button class="font-link" type="button" on:click={() => showInspector(result)}>
+                <span>{result.name}</span>
+                <span class="inspect-badge" aria-hidden="true">Inspect</span>
+              </button>
+              <div class="card-metrics">
+                <span>Body: <strong>{result.body.ratio.toFixed(2)}%</strong></span>
+                <span>Stroke: <strong>{result.stroke.ratio.toFixed(2)}%</strong></span>
+              </div>
+              <div class="card-tests">
+                {#each columns as column}
+                  {@const passed = column.get(result)}
+                  <span class:pass={passed} class:fail={!passed}>
+                    {column.label}: {passed ? 'PASS' : 'FAIL'}
+                  </span>
+                {/each}
+              </div>
+            </div>
+          {/if}
+        {/each}
+      {:else}
+        <div class="card-empty">Upload one or more `.otf`, `.ttf`, `.woff`, or `.woff2` files.</div>
+      {/if}
     </section>
   </main>
 
@@ -541,7 +607,7 @@
               <td>{letter}</td>
               <td>{metric.width.toFixed(2)}</td>
               <td>{metric.height.toFixed(2)}</td>
-              <td>{metric.ratio}%</td>
+              <td>{metric.ratio.toFixed(2)}%</td>
             </tr>
           {/each}
         </tbody>

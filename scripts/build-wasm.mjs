@@ -2,36 +2,38 @@ import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-const input = resolve('src/wasm/ada_metrics.c');
-const output = resolve('src/lib/wasm/ada_metrics.wasm');
+const wasmDir = resolve('src/wasm');
+const outDir = resolve('src/lib/wasm');
+mkdirSync(outDir, { recursive: true });
 
-mkdirSync(dirname(output), { recursive: true });
+function compile(input, output, exports) {
+  const args = [
+    '--target=wasm32',
+    '-O3',
+    '-nostdlib',
+    `-I${wasmDir}`,
+    '-Wl,--no-entry',
+    ...exports.map((e) => `-Wl,--export=${e}`),
+    '-Wl,--allow-undefined',
+    '-o', output,
+    input
+  ];
 
-const args = [
-  '--target=wasm32',
-  '-O3',
-  '-nostdlib',
-  '-Wl,--no-entry',
-  '-Wl,--export=ratio_percent',
-  '-Wl,--export=average_percent',
-  '-Wl,--export=in_range',
-  '-Wl,--export=standards_pass',
-  '-Wl,--export=federal_tactile_pass',
-  '-Wl,--export=federal_visual_pass',
-  '-Wl,--export=california_tactile_pass',
-  '-Wl,--export=california_visual_pass',
-  '-Wl,--allow-undefined',
-  '-o',
-  output,
-  input
-];
-
-const result = spawnSync('clang', args, { stdio: 'inherit' });
-
-if (result.error) {
-  throw result.error;
+  const result = spawnSync('clang', args, { stdio: 'inherit' });
+  if (result.error) throw result.error;
+  if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
-if (result.status !== 0) {
-  process.exit(result.status ?? 1);
-}
+compile(
+  resolve('src/wasm/ada_metrics.c'),
+  resolve('src/lib/wasm/ada_metrics.wasm'),
+  ['ratio_percent', 'average_percent', 'in_range', 'standards_pass',
+   'federal_tactile_pass', 'federal_visual_pass',
+   'california_tactile_pass', 'california_visual_pass']
+);
+
+compile(
+  resolve('src/wasm/ada_analyzer.c'),
+  resolve('src/lib/wasm/ada_analyzer.wasm'),
+  ['analyze_font', 'get_font_ptr', 'get_result_ptr']
+);
