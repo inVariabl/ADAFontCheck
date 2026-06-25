@@ -4,6 +4,16 @@
   import '../../dist/style.css';
   import './styles.css';
 
+  if (typeof globalThis.crypto?.randomUUID !== 'function') {
+    const g = globalThis;
+    if (!g.crypto) g.crypto = {};
+    g.crypto.randomUUID = () =>
+      'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = (Math.random() * 16) | 0;
+        return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+      });
+  }
+
   const columns = [
     {
       label: 'Federal Tactile',
@@ -39,7 +49,7 @@
   const failIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path fill-rule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" /></svg>`;
   const inspectIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="font-inspector-icon" aria-hidden="true"><path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 1 0 4.24 11.998l4.256 4.256a.75.75 0 1 0 1.06-1.06l-4.255-4.256A6.75 6.75 0 0 0 10.5 3.75Zm-5.25 6.75a5.25 5.25 0 1 1 10.5 0 5.25 5.25 0 0 1-10.5 0Z" clip-rule="evenodd" /></svg>`;
 
-  let worker;
+  let activeWorkers = [];
   let requestId = 0;
   let results = [];
   let errors = [];
@@ -65,12 +75,9 @@
     queueMicrotask(() => drawSelectedGlyphs());
   }
 
-  function getWorker() {
-    worker ??= new Worker(new URL('$lib/fontWorker.js', import.meta.url), { type: 'module' });
-    return worker;
-  }
-
   async function handleFiles(event) {
+    if (processing) return;
+
     const files = Array.from(event.currentTarget.files ?? []).filter((file) =>
       /\.(otf|ttf|woff|woff2)$/i.test(file.name) && !/^\._/i.test(file.name)
     );
@@ -82,6 +89,8 @@
   }
 
   async function processFiles(files) {
+    if (processing) return;
+
     processing = true;
     processed = 0;
     total = files.length;
@@ -90,38 +99,124 @@
     selected = null;
     visualizeOpen = false;
 
-    try {
-      const id = (requestId += 1);
-      const BATCH_SIZE = 50;
-      const fileArray = Array.from(files);
-      let allResults = [];
+    const id = (requestId += 1);
+    const fileArray = Array.from(files);
+    const numWorkers = navigator.hardwareConcurrency || 4;
+    const BATCH_SIZE = 300;
+    const MINI_BATCH = 6;
+    const tStart = performance.now();
+    let readTime = 0;
+    let workers = [];
 
-      for (let i = 0; i < fileArray.length; i += BATCH_SIZE) {
-        const batch = fileArray.slice(i, i + BATCH_SIZE);
-        const payload = await Promise.all(
+    try {
+      for (let i = 0; i < numWorkers; i++) {
+        workers.push(
+          new Worker(new URL('$lib/fontWorker.js', import.meta.url), { type: 'module' })
+        );
+      }
+      activeWorkers = workers;
+
+      const allFileResults = [];
+      let currentQueue = [];
+      let batchActiveCount = 0;
+      let batchResolve = null;
+
+      const readBatch = (start) => {
+        const t = performance.now();
+        const batch = fileArray.slice(start, start + BATCH_SIZE);
+        return Promise.all(
           batch.map(async (file) => ({
             name: file.name,
             buffer: await file.arrayBuffer()
           }))
-        );
-
-        const batchResults = await new Promise((resolve, reject) => {
-          getWorker().onmessage = (event) => {
-            if (event.data.id !== id) return;
-            if (event.data.type === 'complete') resolve(event.data.results);
-            if (event.data.type === 'error') reject(new Error(event.data.error));
-          };
-          getWorker().postMessage({ id, files: payload }, payload.map((f) => f.buffer));
+        ).then(data => {
+          readTime += performance.now() - t;
+          return data;
         });
+      };
 
-        allResults = allResults.concat(batchResults);
-        processed = allResults.length;
+      for (let wi = 0; wi < numWorkers; wi++) {
+        workers[wi].onmessage = (event) => {
+          if (event.data.id !== id) return;
+          if (event.data.type !== 'result') return;
+
+          const results = event.data.results;
+          for (let i = 0; i < results.length; i++) {
+            allFileResults.push(results[i]);
+          }
+          processed = allFileResults.length;
+          batchActiveCount--;
+
+          if (currentQueue.length > 0) {
+            const mb = currentQueue.shift();
+            batchActiveCount++;
+            workers[wi].postMessage({ id, files: mb }, mb.map(f => f.buffer));
+          } else if (batchActiveCount === 0 && batchResolve) {
+            batchResolve();
+          }
+        };
       }
 
-      results = allResults;
+      let nextBatchPromise = readBatch(0);
+
+      for (let batchStart = 0; batchStart < fileArray.length; batchStart += BATCH_SIZE) {
+        const batchData = await nextBatchPromise;
+
+        const nextBatchStart = batchStart + BATCH_SIZE;
+        if (nextBatchStart < fileArray.length) {
+          nextBatchPromise = readBatch(nextBatchStart);
+        } else {
+          nextBatchPromise = null;
+        }
+
+        const miniBatches = [];
+        for (let i = 0; i < batchData.length; i += MINI_BATCH) {
+          miniBatches.push(batchData.slice(i, i + MINI_BATCH));
+        }
+
+        await new Promise((resolve) => {
+          currentQueue = [...miniBatches];
+          batchActiveCount = 0;
+          batchResolve = resolve;
+
+          for (let wi = 0; wi < numWorkers; wi++) {
+            if (currentQueue.length > 0) {
+              const mb = currentQueue.shift();
+              batchActiveCount++;
+              workers[wi].postMessage({ id, files: mb }, mb.map(f => f.buffer));
+            }
+          }
+
+          if (batchActiveCount === 0) resolve();
+        });
+      }
+
+      let workersDone = 0;
+      await new Promise((resolve) => {
+        for (let wi = 0; wi < numWorkers; wi++) {
+          workers[wi].onmessage = (event) => {
+            if (event.data.id !== id) return;
+            if (event.data.type === 'done') {
+              workersDone++;
+              if (workersDone === numWorkers) resolve();
+            }
+          };
+          workers[wi].postMessage({ id, done: true });
+        }
+      });
+
+      const elapsed = performance.now() - tStart;
+      console.log(
+        `[Main] ${fileArray.length} fonts in ${(elapsed / 1000).toFixed(2)}s ` +
+        `(read: ${(readTime / 1000).toFixed(2)}s, workers: ${numWorkers}, mini-batch: ${MINI_BATCH})`
+      );
+
+      results = allFileResults;
       errors = results.filter((result) => result.error);
     } finally {
       processing = false;
+      for (const w of workers) w.terminate();
+      activeWorkers = [];
     }
   }
 
@@ -384,7 +479,10 @@
   }
 
   onDestroy(() => {
-    worker?.terminate();
+    for (const w of activeWorkers) {
+      w.terminate();
+    }
+    activeWorkers = [];
   });
 </script>
 

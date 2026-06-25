@@ -3,6 +3,16 @@ import { loadAdaMetrics } from './wasm/adaMetrics.js';
 import { deriveFontMetadataFromFilename } from './fontName.js';
 import { analyzeFontWithOpenType } from './opentypeAnalyzer.js';
 
+if (typeof globalThis.crypto?.randomUUID !== 'function') {
+  const g = globalThis;
+  if (!g.crypto) g.crypto = {};
+  g.crypto.randomUUID = () =>
+    'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+    });
+}
+
 const adaMetricsPromise = loadAdaMetrics();
 
 function looksEmpty(result) {
@@ -35,8 +45,57 @@ function buildTestResult(adaMetrics, sansSerif, notitalic, bodyRatio, strokeRati
   };
 }
 
+let totalWasmTime = 0;
+let totalFallbackTime = 0;
+let totalFonts = 0;
+let fallbackCount = 0;
+
+function buildResult(metrics, fileName, adaMetrics) {
+  const needsNameFallback = !metrics.name || metrics.name === 'Unknown Font';
+  const needsWeightFallback = !metrics.weight || metrics.weight === 'Regular';
+  const fallback = (needsNameFallback || needsWeightFallback) ? deriveFontMetadataFromFilename(fileName) : null;
+  return {
+    fileName,
+    name: needsNameFallback && fallback ? fallback.name : metrics.name,
+    weight: needsWeightFallback && fallback ? fallback.weight : metrics.weight,
+    i: metrics.i, h: metrics.h, o: metrics.o,
+    stroke: metrics.stroke, body: metrics.body,
+    test: buildTestResult(adaMetrics, metrics.test.sansSerif, metrics.test.notitalic, metrics.body.ratio, metrics.stroke.ratio)
+  };
+}
+
+async function analyzeOneFile(file, adaMetrics) {
+  const t0 = performance.now();
+  const analyzed = await analyzeFont(file.buffer);
+  const wasmTime = performance.now() - t0;
+  totalWasmTime += wasmTime;
+  totalFonts++;
+
+  const needsFallback = analyzed.error || looksEmpty(analyzed);
+  if (needsFallback) {
+    const t1 = performance.now();
+    const fallbackResult = analyzeFontWithOpenType(file.buffer, file.name);
+    totalFallbackTime += performance.now() - t1;
+    fallbackCount++;
+    return buildResult(fallbackResult, file.name, adaMetrics);
+  }
+
+  return buildResult(analyzed, file.name, adaMetrics);
+}
+
 self.addEventListener('message', async (event) => {
-  const { id, files } = event.data;
+  const { id, files, done } = event.data;
+
+  if (done) {
+    if (totalFonts > 0) {
+      console.log(
+        `[Worker] ${totalFonts} fonts: WASM avg ${(totalWasmTime / totalFonts).toFixed(2)}ms, ` +
+        `fallback ${fallbackCount} fonts avg ${fallbackCount > 0 ? (totalFallbackTime / fallbackCount).toFixed(2) : 0}ms`
+      );
+    }
+    self.postMessage({ id, type: 'done' });
+    return;
+  }
 
   try {
     const adaMetrics = await adaMetricsPromise;
@@ -44,35 +103,7 @@ self.addEventListener('message', async (event) => {
 
     for (const file of files) {
       try {
-        const analyzed = await analyzeFont(file.buffer);
-        const result =
-          analyzed.error || looksEmpty(analyzed)
-            ? analyzeFontWithOpenType(file.buffer, file.name)
-            : analyzed;
-
-        const fallback = deriveFontMetadataFromFilename(file.name);
-        const name = result.name && result.name !== 'Unknown Font' ? result.name : fallback.name;
-        const weight = result.weight && result.weight !== 'Regular' ? result.weight : fallback.weight;
-
-        results.push({
-          fileName: file.name,
-          name,
-          weight,
-          i: result.i,
-          h: result.h,
-          o: result.o,
-          stroke: result.stroke,
-          body: result.body,
-          test: buildTestResult(
-            adaMetrics,
-            result.test.sansSerif,
-            result.test.notitalic,
-            result.body.ratio,
-            result.stroke.ratio
-          )
-        });
-
-        self.postMessage({ id, type: 'progress', processed: results.length, total: files.length });
+        results.push(await analyzeOneFile(file, adaMetrics));
       } catch (error) {
         results.push({
           fileName: file.name,
@@ -81,12 +112,15 @@ self.addEventListener('message', async (event) => {
       }
     }
 
-    self.postMessage({ id, type: 'complete', results });
+    self.postMessage({ id, type: 'result', results });
   } catch (error) {
     self.postMessage({
       id,
-      type: 'error',
-      error: error instanceof Error ? error.message : String(error)
+      type: 'result',
+      results: files.map(f => ({
+        fileName: f.name,
+        error: error instanceof Error ? error.message : String(error)
+      }))
     });
   }
 });
