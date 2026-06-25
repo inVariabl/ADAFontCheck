@@ -411,6 +411,7 @@
   </div>
   <div class="flex-none">
     <ul class="menu menu-horizontal px-1">
+      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <li tabindex="0">
         <a class="text-secondary-content" href="/#" on:click|preventDefault>
           Upload
@@ -427,6 +428,7 @@
           </li>
         </ul>
       </li>
+      <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
       <li tabindex="0">
         <a class="text-secondary-content" href="/#" on:click|preventDefault>
           Settings
