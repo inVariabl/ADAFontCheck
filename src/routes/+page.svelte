@@ -53,18 +53,10 @@
   let canvasI;
   let canvasH;
   let canvasO;
-  let processingDialog;
 
   $: if (typeof document !== 'undefined') {
     document.documentElement.dataset.theme = darkMode ? 'black' : 'emerald';
   }
-
-  $: if (processing) {
-    processingDialog?.showModal();
-  } else {
-    processingDialog?.close();
-  }
-
   $: if (!visualizeOpen) {
     selected = null;
   }
@@ -653,13 +645,18 @@
   </label>
 </label>
 
-<dialog bind:this={processingDialog} class="modal">
+<div class="modal" class:modal-open={processing}>
   <div class="modal-box">
     <h3 class="text-lg font-bold">Processing Fonts</h3>
     <p class="py-4">{processed} of {total} fonts processed</p>
-    <progress class="progress progress-primary w-full" value={processed} max={total}></progress>
+    <div class="w-full bg-base-300" style="height: 1rem; border-radius: 9999px;">
+      <div
+        class="bg-success"
+        style="width: {total > 0 ? (processed / total) * 100 : 0}%; height: 1rem; border-radius: 9999px; transition: width 0.3s;"
+      ></div>
+    </div>
   </div>
-</dialog>
+</div>
 
 <input
   type="checkbox"
