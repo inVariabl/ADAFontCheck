@@ -304,7 +304,8 @@ int analyze_font(int data_size) {
   if (stbtt__find_table(font_data, offset, "CFF2")) { out->error = -4; return -4; }
   if (stbtt__find_table(font_data, offset, "fvar")) { out->error = -3; return -3; }
   if (!stbtt_InitFont(&font, font_data, offset)) { out->error = -1; return -1; }
-  get_name_entry(&font, 1, out->name, 256);
+  if (get_name_entry(&font, 4, out->name, 256) <= 0)
+    get_name_entry(&font, 1, out->name, 256);
   get_name_entry(&font, 2, out->subfamily, 256);
   out->name_len = strlen(out->name);
   out->subfamily_len = strlen(out->subfamily);

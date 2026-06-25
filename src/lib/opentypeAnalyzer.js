@@ -227,16 +227,19 @@ function analyzeGlyph(font, letter, options = {}) {
 
 export function analyzeFontWithOpenType(buffer, fileName = '') {
   const font = parse(buffer);
-  const family = getFirstNameEntry(
-    font,
-    ['preferredFamily', 'fontFamily', 'fullName', 'postScriptName'],
-    'Unknown Font'
-  );
   const subfamily = getFirstNameEntry(font, ['preferredSubfamily', 'fontSubfamily'], 'Regular');
-  const fullName = family === 'Unknown Font' ? family : `${family} ${subfamily}`.trim();
+  const nameEntry = getFirstNameEntry(font, ['fullName'], '');
   const fallbackMeta = deriveFontMetadataFromFilename(fileName);
-  const name = fullName === 'Unknown Font' ? fallbackMeta.name : fullName;
-  const weight = fullName === 'Unknown Font' ? fallbackMeta.weight : subfamily;
+  let name, weight;
+  if (nameEntry) {
+    name = nameEntry;
+    weight = subfamily;
+  } else {
+    const family = getFirstNameEntry(font, ['preferredFamily', 'fontFamily', 'postScriptName'], 'Unknown Font');
+    const combined = family === 'Unknown Font' ? family : `${family} ${subfamily}`.trim();
+    name = combined === 'Unknown Font' ? fallbackMeta.name : combined;
+    weight = combined === 'Unknown Font' ? fallbackMeta.weight : subfamily;
+  }
 
   const i = analyzeGlyph(font, 'I', { trimSerifs: true });
   const h = analyzeGlyph(font, 'H');
