@@ -73,7 +73,7 @@
 
   async function handleFiles(event) {
     const files = Array.from(event.currentTarget.files ?? []).filter((file) =>
-      /\.(otf|ttf|woff|woff2)$/i.test(file.name)
+      /\.(otf|ttf|woff|woff2)$/i.test(file.name) && !/^\._/i.test(file.name)
     );
     event.currentTarget.value = '';
 
