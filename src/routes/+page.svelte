@@ -2,7 +2,6 @@
   import { onDestroy } from 'svelte';
   import { downloadResultsCsv } from '$lib/csv.js';
   import MetricList from '$lib/MetricList.svelte';
-  import { parse } from 'opentype.js';
   import './styles.css';
 
   const columns = [
@@ -47,7 +46,6 @@
   let processed = 0;
   let total = 0;
   let processing = false;
-  let fontBuffers = new Map();
   let compact = false;
   let darkMode = false;
   let federalOnly = false;
@@ -103,43 +101,41 @@
     results = [];
     errors = [];
     selected = null;
-    fontBuffers = new Map();
 
-    const id = (requestId += 1);
-    const BATCH_SIZE = 50;
-    const fileArray = Array.from(files);
-    let allResults = [];
+    try {
+      const id = (requestId += 1);
+      const BATCH_SIZE = 50;
+      const fileArray = Array.from(files);
+      let allResults = [];
 
-    for (let i = 0; i < fileArray.length; i += BATCH_SIZE) {
-      const batch = fileArray.slice(i, i + BATCH_SIZE);
+      for (let i = 0; i < fileArray.length; i += BATCH_SIZE) {
+        const batch = fileArray.slice(i, i + BATCH_SIZE);
 
-      const payload = await Promise.all(
-        batch.map(async (file) => ({
-          name: file.name,
-          buffer: await file.arrayBuffer()
-        }))
-      );
+        const payload = await Promise.all(
+          batch.map(async (file) => ({
+            name: file.name,
+            buffer: await file.arrayBuffer()
+          }))
+        );
 
-      for (const f of payload) {
-        fontBuffers.set(f.name, f.buffer.slice(0));
+        const batchResults = await new Promise((resolve, reject) => {
+          getWorker().onmessage = (event) => {
+            if (event.data.id !== id) return;
+            if (event.data.type === 'complete') resolve(event.data.results);
+            if (event.data.type === 'error') reject(new Error(event.data.error));
+          };
+          getWorker().postMessage({ id, files: payload }, payload.map((f) => f.buffer));
+        });
+
+        allResults = allResults.concat(batchResults);
+        processed = allResults.length;
       }
 
-      const batchResults = await new Promise((resolve, reject) => {
-        getWorker().onmessage = (event) => {
-          if (event.data.id !== id) return;
-          if (event.data.type === 'complete') resolve(event.data.results);
-          if (event.data.type === 'error') reject(new Error(event.data.error));
-        };
-        getWorker().postMessage({ id, files: payload }, payload.map((f) => f.buffer));
-      });
-
-      allResults = allResults.concat(batchResults);
-      processed = allResults.length;
+      results = allResults;
+      errors = results.filter((result) => result.error);
+    } finally {
+      processing = false;
     }
-
-    results = allResults;
-    errors = results.filter((result) => result.error);
-    processing = false;
   }
 
   function clearFonts() {
@@ -148,33 +144,10 @@
     processed = 0;
     total = 0;
     selected = null;
-    fontBuffers = new Map();
   }
 
   function showInspector(result) {
     if (result.error) {
-      return;
-    }
-    const buffer = fontBuffers.get(result.fileName);
-    if (!buffer) {
-      return;
-    }
-    try {
-      const font = parse(buffer);
-      const chars = ['I', 'H', 'O'];
-      for (const char of chars) {
-        const path = font.getPath(char, 0, 150, 72);
-        const commands = path.commands.map((cmd) => {
-          const c = { type: cmd.type };
-          for (const key of ['x', 'y', 'x1', 'y1', 'x2', 'y2']) {
-            if (cmd[key] !== undefined) c[key] = cmd[key];
-          }
-          return c;
-        });
-        const key = char.toLowerCase();
-        result[key].commands = commands;
-      }
-    } catch (e) {
       return;
     }
     selected = result;
@@ -241,8 +214,8 @@
     for (const command of metrics.commands) {
       if (command.type === 'M') ctx.moveTo(command.x, command.y);
       if (command.type === 'L') ctx.lineTo(command.x, command.y);
-      if (command.type === 'C') ctx.bezierCurveTo(command.x1, command.y1, command.x2, command.y2, command.x, command.y);
-      if (command.type === 'Q') ctx.quadraticCurveTo(command.x1, command.y1, command.x, command.y);
+      if (command.type === 'C') ctx.bezierCurveTo(command.x1 ?? command.cx1, command.y1 ?? command.cy1, command.x2 ?? command.cx, command.y2 ?? command.cy, command.x, command.y);
+      if (command.type === 'Q') ctx.quadraticCurveTo(command.x1 ?? command.cx, command.y1 ?? command.cy, command.x, command.y);
       if (command.type === 'Z') ctx.closePath();
     }
     ctx.fillStyle = 'rgba(55, 65, 81, 0.16)';
@@ -559,8 +532,8 @@
   </main>
 
   <footer>
-    <button type="button" on:click={() => alert('ADAFontCheck determines if a font meets U.S. Federal and California ADA accessibility regulations for tactile and visual signage using opentype.js, Web Workers, and C WASM.')}>About</button>
-    <a href="https://opentype.js.org/glyph-inspector.html">Glyph Inspector</a>
+    <button type="button" on:click={() => alert('ADAFontCheck determines if a font meets U.S. Federal and California ADA accessibility regulations for tactile and visual signage using Web Workers and C compiled to WebAssembly.')}>About</button>
+    <a href="https://adafontcheck.xyz/">Project</a>
     <a href="https://github.com/inVariabl/ADAFontCheck">Source</a>
     <span>Copyright © 2026 - All rights reserved by Crooks Design.</span>
   </footer>

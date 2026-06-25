@@ -34,8 +34,19 @@ void free(void *p) { (void)p; }
 
 #define MAX_NAME 256
 #define MAX_COORDS 64
+#define MAX_VERTICES 64
 #define FONT_BUF_SIZE (8 * 1024 * 1024)
-#define RESULT_SIZE 4096
+#define RESULT_SIZE 8192
+
+typedef struct {
+  int type;
+  int x;
+  int y;
+  int cx;
+  int cy;
+  int cx1;
+  int cy1;
+} VertexCommand;
 
 static unsigned char font_data[FONT_BUF_SIZE];
 static char result_buf[RESULT_SIZE];
@@ -168,6 +179,20 @@ static float get_size(float *arr, int count) {
   return arr[count - 1] - arr[0];
 }
 
+static int serialize_vertices(stbtt_vertex *verts, int n, VertexCommand *out, int max_out) {
+  int count = n < max_out ? n : max_out;
+  for (int i = 0; i < count; i++) {
+    out[i].type = verts[i].type;
+    out[i].x = verts[i].x;
+    out[i].y = verts[i].y;
+    out[i].cx = verts[i].cx;
+    out[i].cy = verts[i].cy;
+    out[i].cx1 = verts[i].cx1;
+    out[i].cy1 = verts[i].cy1;
+  }
+  return count;
+}
+
 static double ratio_percent(double width, double height) {
   if (height == 0.0) return 0.0;
   double raw = (width / height) * 100.0;
@@ -241,11 +266,12 @@ static int analyze_serif_like(stbtt_fontinfo *font, int codepoint) {
 }
 
 static void get_glyph_metrics(stbtt_fontinfo *font, int cp, int trim, int filter_lc,
-    float *xs, int *xc, float *ys, int *yc, float *w, float *h, float *r) {
+    float *xs, int *xc, float *ys, int *yc, float *w, float *h, float *r,
+    VertexCommand *commands, int *command_count) {
   int gi = stbtt_FindGlyphIndex(font, cp);
-  if (!gi) { *w=0;*h=0;*r=0;*xc=0;*yc=0; return; }
+  if (!gi) { *w=0;*h=0;*r=0;*xc=0;*yc=0;*command_count=0; return; }
   stbtt_vertex *verts; int n = stbtt_GetGlyphShape(font, gi, &verts);
-  if (n <= 0) { *w=0;*h=0;*r=0;*xc=0;*yc=0; return; }
+  if (n <= 0) { *w=0;*h=0;*r=0;*xc=0;*yc=0;*command_count=0; return; }
   float tx[64], ty[64]; int txc, tyc;
   extract_coords_sort(verts, n, tx, &txc, ty, &tyc);
   if (trim) trim_i_serifs(tx, &txc, ty, &tyc);
@@ -253,15 +279,18 @@ static void get_glyph_metrics(stbtt_fontinfo *font, int cp, int trim, int filter
   *r = (float)ratio_percent((double)*w, (double)*h);
   for (int i = 0; i < txc && i < MAX_COORDS; i++) xs[i] = tx[i]; *xc = txc;
   for (int i = 0; i < tyc && i < MAX_COORDS; i++) ys[i] = ty[i]; *yc = tyc;
+  *command_count = serialize_vertices(verts, n, commands, MAX_VERTICES);
   STBTT_free(verts, NULL);
 }
 
 typedef struct {
   int name_len, subfamily_len;
   int i_xc, i_yc, h_xc, h_yc, o_xc, o_yc;
+  int i_vc, h_vc, o_vc;
   int is_sans_serif, is_not_italic, error;
   float i_w, i_h, i_r, h_w, h_h, h_r, o_w, o_h, o_r, body_ratio, stroke_ratio;
   float i_x[64], i_y[64], h_x[64], h_y[64], o_x[64], o_y[64];
+  VertexCommand i_vertices[64], h_vertices[64], o_vertices[64];
   char name[256], subfamily[256];
 } FontResult;
 
@@ -279,9 +308,12 @@ int analyze_font(int data_size) {
   get_name_entry(&font, 2, out->subfamily, 256);
   out->name_len = strlen(out->name);
   out->subfamily_len = strlen(out->subfamily);
-  get_glyph_metrics(&font, 0x49, 1, 0, out->i_x, &out->i_xc, out->i_y, &out->i_yc, &out->i_w, &out->i_h, &out->i_r);
-  get_glyph_metrics(&font, 0x48, 0, 0, out->h_x, &out->h_xc, out->h_y, &out->h_yc, &out->h_w, &out->h_h, &out->h_r);
-  get_glyph_metrics(&font, 0x4F, 0, 1, out->o_x, &out->o_xc, out->o_y, &out->o_yc, &out->o_w, &out->o_h, &out->o_r);
+  get_glyph_metrics(&font, 0x49, 1, 0, out->i_x, &out->i_xc, out->i_y, &out->i_yc,
+      &out->i_w, &out->i_h, &out->i_r, out->i_vertices, &out->i_vc);
+  get_glyph_metrics(&font, 0x48, 0, 0, out->h_x, &out->h_xc, out->h_y, &out->h_yc,
+      &out->h_w, &out->h_h, &out->h_r, out->h_vertices, &out->h_vc);
+  get_glyph_metrics(&font, 0x4F, 0, 1, out->o_x, &out->o_xc, out->o_y, &out->o_yc,
+      &out->o_w, &out->o_h, &out->o_r, out->o_vertices, &out->o_vc);
   out->stroke_ratio = out->i_r;
   out->body_ratio = (float)((double)(out->h_r + out->o_r) / 2.0);
   out->is_not_italic = icontains(out->subfamily, "italic") ? 0 : 1;

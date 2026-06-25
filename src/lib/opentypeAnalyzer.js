@@ -1,19 +1,6 @@
 import { parse } from 'opentype.js';
 import { deriveFontMetadataFromFilename } from './fontName.js';
 
-const STANDARDS = {
-  federal: {
-    body: { min: 55, max: 110 },
-    tactile: { min: 0, max: 15 },
-    visual: { min: 10, max: 30 }
-  },
-  california: {
-    body: { min: 60, max: 110 },
-    tactile: { min: 0, max: 15 },
-    visual: { min: 10, max: 20 }
-  }
-};
-
 function getNameEntry(nameTable, fallback) {
   if (typeof nameTable === 'string' && nameTable.trim()) {
     return nameTable;
@@ -77,15 +64,26 @@ function getSize(arr) {
   return arr[arr.length - 1] - arr[0];
 }
 
+function ratioPercent(width, height) {
+  if (height === 0) {
+    return 0;
+  }
+  return Number(((width / height) * 100).toFixed(2));
+}
+
+function averagePercent(first, second) {
+  return Number((((first + second) / 2) || 0).toFixed(2));
+}
+
 function notItalicTest(subfamily) {
-  return !/italic/gi.test(subfamily);
+  return !/italic/i.test(subfamily);
 }
 
 function detectVerticalStems(commands, font) {
   const stems = [];
   const unitsPerEm = font.unitsPerEm || 1000;
   const minHeight = unitsPerEm * 0.05;
-  const maxWidth = /italic/gi.test(getNameEntry(font.names.fontSubfamily, ''))
+  const maxWidth = /italic/i.test(getNameEntry(font.names.fontSubfamily, ''))
     ? unitsPerEm * 0.03
     : unitsPerEm * 0.01;
 
@@ -155,8 +153,8 @@ function hasSerifProtrusions(commands, bounds, stems) {
 }
 
 function isSansSerif(font) {
-  const serifIndicators = [/serif/gi, /times/gi, /georgia/gi, /garamond/gi, /baskerville/gi];
-  const sansSerifIndicators = [/sans/gi, /helvetica/gi, /arial/gi, /verdana/gi, /futura/gi];
+  const serifIndicators = [/serif/i, /times/i, /georgia/i, /garamond/i, /baskerville/i];
+  const sansSerifIndicators = [/sans/i, /helvetica/i, /arial/i, /verdana/i, /futura/i];
   const fontName = getNameEntry(font.names.fullName, '').toLowerCase();
 
   if (serifIndicators.some((regex) => regex.test(fontName))) {
@@ -211,7 +209,7 @@ function glyphPath(font, letter) {
   return font.getPath(letter, 0, 150, 72).commands.map(serializeCommand);
 }
 
-function analyzeGlyph(font, letter, ratioPercent, options = {}) {
+function analyzeGlyph(font, letter, options = {}) {
   const sourceCommands = glyphPath(font, letter);
   const metricCommands = options.filter
     ? sourceCommands.filter(options.filter)
@@ -227,11 +225,8 @@ function analyzeGlyph(font, letter, ratioPercent, options = {}) {
   return metric;
 }
 
-export async function analyzeFontFile(file, adaMetrics) {
-  if (file.buffer.byteLength > 10 * 1024 * 1024) {
-    return { fileName: file.name, error: 'Font too large (>10MB)' };
-  }
-  const font = parse(file.buffer);
+export function analyzeFontWithOpenType(buffer, fileName = '') {
+  const font = parse(buffer);
   const family = getFirstNameEntry(
     font,
     ['preferredFamily', 'fontFamily', 'fullName', 'postScriptName'],
@@ -239,50 +234,31 @@ export async function analyzeFontFile(file, adaMetrics) {
   );
   const subfamily = getFirstNameEntry(font, ['preferredSubfamily', 'fontSubfamily'], 'Regular');
   const fullName = family === 'Unknown Font' ? family : `${family} ${subfamily}`.trim();
-  const fallbackMeta = deriveFontMetadataFromFilename(file.name);
+  const fallbackMeta = deriveFontMetadataFromFilename(fileName);
   const name = fullName === 'Unknown Font' ? fallbackMeta.name : fullName;
   const weight = fullName === 'Unknown Font' ? fallbackMeta.weight : subfamily;
 
-  const i = analyzeGlyph(font, 'I', adaMetrics.ratio_percent, { trimSerifs: true });
-  const h = analyzeGlyph(font, 'H', adaMetrics.ratio_percent);
-  const o = analyzeGlyph(font, 'O', adaMetrics.ratio_percent, {
+  const i = analyzeGlyph(font, 'I', { trimSerifs: true });
+  const h = analyzeGlyph(font, 'H');
+  const o = analyzeGlyph(font, 'O', {
     filter: (command) => command.type === 'L' || command.type === 'C'
   });
   const sansSerif = isSansSerif(font);
   const notitalic = notItalicTest(subfamily);
-  const bodyRatio = adaMetrics.average_percent(h.ratio, o.ratio);
+  const bodyRatio = averagePercent(h.ratio, o.ratio);
   const strokeRatio = i.ratio;
 
   return {
-    fileName: file.name,
     name,
     weight,
     i,
     h,
     o,
-    federal: STANDARDS.federal,
-    california: STANDARDS.california,
     stroke: { ratio: strokeRatio },
     body: { ratio: bodyRatio },
     test: {
       notitalic,
-      sansSerif,
-      federal: {
-        tactile: Boolean(
-          adaMetrics.federal_tactile_pass(Number(sansSerif), Number(notitalic), bodyRatio, strokeRatio)
-        ),
-        visual: Boolean(
-          adaMetrics.federal_visual_pass(Number(sansSerif), Number(notitalic), bodyRatio, strokeRatio)
-        )
-      },
-      california: {
-        tactile: Boolean(
-          adaMetrics.california_tactile_pass(Number(sansSerif), Number(notitalic), bodyRatio, strokeRatio)
-        ),
-        visual: Boolean(
-          adaMetrics.california_visual_pass(Number(sansSerif), Number(notitalic), bodyRatio, strokeRatio)
-        )
-      }
+      sansSerif
     }
   };
 }
