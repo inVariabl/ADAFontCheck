@@ -456,9 +456,7 @@
 
 <main class="flex-grow bg-base-100">
   <div class="overflow-x-auto p-8 drop-shadow-lg">
-    {#if processing}
-      <div class="mb-4 text-sm opacity-70">Processing {processed} of {total}</div>
-    {/if}
+
 
     {#if errors.length}
       <div class="mb-4 text-error text-sm">
@@ -647,6 +645,16 @@
     </ol>
   </label>
 </label>
+
+{#if processing}
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+  <div class="modal-box">
+    <h3 class="text-lg font-bold">Processing Fonts</h3>
+    <p class="py-4">{processed} of {total} fonts processed</p>
+    <progress class="progress progress-primary w-full" value={processed} max={total}></progress>
+  </div>
+</div>
+{/if}
 
 <input
   type="checkbox"
