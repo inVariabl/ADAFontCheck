@@ -11,6 +11,7 @@ function compile(input, output, exports) {
     '--target=wasm32',
     '-O3',
     '-nostdlib',
+    '-fno-stack-protector',
     `-I${wasmDir}`,
     '-Wl,--no-entry',
     '-Wl,--initial-memory=12582912',

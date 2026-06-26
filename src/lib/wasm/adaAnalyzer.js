@@ -3,7 +3,7 @@ import wasmUrl from './ada_analyzer.wasm?url';
 let analyzerPromise;
 
 export function loadAdaAnalyzer() {
-  analyzerPromise ??= WebAssembly.instantiateStreaming(fetch(wasmUrl), {}).then(
+  analyzerPromise ??= WebAssembly.instantiateStreaming(fetch(wasmUrl), { env: {} }).then(
     ({ instance }) => ({
       exports: instance.exports,
       memory: instance.exports.memory
