@@ -1,7 +1,7 @@
 import { analyzeFont, getVariableInstances, analyzeFontInstance } from './wasm/adaAnalyzer.js';
 import { loadAdaMetrics } from './wasm/adaMetrics.js';
 import { deriveFontMetadataFromFilename } from './fontName.js';
-import { analyzeFontWithOpenType, extractGlyphPaths } from './opentypeAnalyzer.js';
+import { analyzeFontWithOpenType } from './opentypeAnalyzer.js';
 import './randomUUID.js';
 
 const adaMetricsPromise = loadAdaMetrics();
@@ -69,17 +69,6 @@ async function analyzeOneFile(file, adaMetrics) {
     return [buildResult(fallbackResult, file.name, adaMetrics)];
   }
 
-  // Use opentype.js paths for glyph inspector rendering — WASM paths may render
-  // incorrectly for some fonts (CFF coordinate bugs, complex shapes, etc.)
-  try {
-    const otPaths = extractGlyphPaths(file.buffer);
-    for (const g of ['i', 'h', 'o']) {
-      if (analyzed[g] && otPaths[g]?.length) {
-        analyzed[g].commands = otPaths[g];
-      }
-    }
-  } catch (_) {}
-
   // Check for variable font named instances
   const instances = await getVariableInstances(file.buffer);
   if (instances.length > 0) {
@@ -87,14 +76,6 @@ async function analyzeOneFile(file, adaMetrics) {
     for (const inst of instances) {
       const instAnalyzed = await analyzeFontInstance(file.buffer, inst.index);
       if (!instAnalyzed.error && !looksEmpty(instAnalyzed)) {
-        try {
-          const otPaths = extractGlyphPaths(file.buffer);
-          for (const g of ['i', 'h', 'o']) {
-            if (instAnalyzed[g] && otPaths[g]?.length) {
-              instAnalyzed[g].commands = otPaths[g];
-            }
-          }
-        } catch (_) {}
         results.push(buildResult(instAnalyzed, file.name, adaMetrics));
       }
     }

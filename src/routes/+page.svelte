@@ -42,6 +42,7 @@
 
   let activeWorkers = [];
   let requestId = 0;
+  let fileArray = [];
   let results = [];
   let errors = [];
   let processed = 0;
@@ -91,7 +92,7 @@
     visualizeOpen = false;
 
     const id = (requestId += 1);
-    const fileArray = Array.from(files);
+    fileArray = Array.from(files);
     const numWorkers = navigator.hardwareConcurrency || 4;
     const BATCH_SIZE = 300;
     const MINI_BATCH = 6;
@@ -218,12 +219,30 @@
     total = 0;
     selected = null;
     visualizeOpen = false;
+    fileArray = [];
   }
 
-  function showVisualization(result) {
+  async function showVisualization(result) {
     if (result.error) return;
     selected = result;
     visualizeOpen = true;
+
+    const file = fileArray.find(f => f.name === result.fileName);
+    if (file) {
+      try {
+        const buffer = await file.arrayBuffer();
+        const { extractGlyphPaths } = await import('$lib/opentypeAnalyzer.js');
+        const otPaths = extractGlyphPaths(buffer);
+        if (!visualizeOpen || selected !== result) return;
+        const enriched = { ...result };
+        for (const g of ['i', 'h', 'o']) {
+          if (enriched[g] && otPaths[g]?.length) {
+            enriched[g] = { ...enriched[g], commands: otPaths[g] };
+          }
+        }
+        selected = enriched;
+      } catch (_) {}
+    }
   }
 
   function closeVisualization() {
