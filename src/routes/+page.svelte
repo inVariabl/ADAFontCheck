@@ -247,14 +247,32 @@
     return Number.isFinite(value) ? `${value.toFixed(2)}%` : 'N/A';
   }
 
+  function boundsFromCommands(metrics) {
+    const xs = metrics.commands.map(c => c.x).filter(Number.isFinite);
+    const ys = metrics.commands.map(c => c.y).filter(Number.isFinite);
+    const bx = xs.length ? xs : (metrics.x?.length ? metrics.x : [0, 100]);
+    const by = ys.length ? ys : (metrics.y?.length ? metrics.y : [0, 100]);
+    return { minX: Math.min(...bx), maxX: Math.max(...bx), minY: Math.min(...by), maxY: Math.max(...by) };
+  }
+
   function drawSelectedGlyphs() {
     if (!selected) return;
     drawGlyph(canvasI, 'I', selected.i);
-    drawGlyph(canvasH, 'H', selected.h);
-    drawGlyph(canvasO, 'O', selected.o);
+
+    const hb = boundsFromCommands(selected.h);
+    const ob = boundsFromCommands(selected.o);
+    const padding = 60;
+    const cw = canvasH.clientWidth || 400;
+    const ch = canvasH.clientHeight || 400;
+    const hScale = Math.min((cw - padding) / ((hb.maxX - hb.minX) || 10), (ch - padding) / ((hb.maxY - hb.minY) || 10), 20);
+    const oScale = Math.min((cw - padding) / ((ob.maxX - ob.minX) || 10), (ch - padding) / ((ob.maxY - ob.minY) || 10), 20);
+    const sharedScale = Math.min(hScale, oScale);
+
+    drawGlyph(canvasH, 'H', selected.h, sharedScale);
+    drawGlyph(canvasO, 'O', selected.o, sharedScale);
   }
 
-  function drawGlyph(canvas, char, metrics) {
+  function drawGlyph(canvas, char, metrics, forcedScale = null) {
     if (!canvas || !metrics) return;
 
     const dpr = window.devicePixelRatio || 1;
@@ -268,12 +286,7 @@
     ctx.clearRect(0, 0, width, height);
     drawGrid(ctx, width, height);
 
-    const xs = metrics.x?.length ? metrics.x : metrics.commands.map((command) => command.x).filter(Number.isFinite);
-    const ys = metrics.y?.length ? metrics.y : metrics.commands.map((command) => command.y).filter(Number.isFinite);
-    let minX = Math.min(...xs);
-    let maxX = Math.max(...xs);
-    let minY = Math.min(...ys);
-    let maxY = Math.max(...ys);
+    let { minX, maxX, minY, maxY } = boundsFromCommands(metrics);
 
     if (!Number.isFinite(minX) || !Number.isFinite(maxX) || minX === maxX) {
       minX = 0;
@@ -289,7 +302,7 @@
     const cx = minX + glyphWidth / 2;
     const cy = minY + glyphHeight / 2;
     const padding = 60;
-    const scale = Math.min((width - padding) / glyphWidth, (height - padding) / glyphHeight, 20);
+    const scale = forcedScale ?? Math.min((width - padding) / glyphWidth, (height - padding) / glyphHeight, 20);
 
     ctx.save();
     ctx.translate(width / 2, height / 2);
@@ -318,9 +331,13 @@
       }
     }
 
+    // Draw lines only at vertex positions so every line has a corresponding dot
+    const lineXs = [...new Set(metrics.commands.map(c => c.x).filter(Number.isFinite))];
+    const lineYs = [...new Set(metrics.commands.map(c => c.y).filter(Number.isFinite))];
+
     ctx.strokeStyle = 'rgba(0, 0, 255, 0.8)';
     ctx.lineWidth = 2 / scale;
-    for (const x of metrics.x ?? []) {
+    for (const x of lineXs) {
       ctx.beginPath();
       ctx.moveTo(x, cy - glyphHeight / 2 - 20 / scale);
       ctx.lineTo(x, cy + glyphHeight / 2 + 20 / scale);
@@ -328,7 +345,7 @@
     }
 
     ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
-    for (const y of metrics.y ?? []) {
+    for (const y of lineYs) {
       ctx.beginPath();
       ctx.moveTo(cx - glyphWidth / 2 - 20 / scale, y);
       ctx.lineTo(cx + glyphWidth / 2 + 20 / scale, y);
