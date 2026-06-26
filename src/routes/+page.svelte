@@ -224,25 +224,26 @@
 
   async function showVisualization(result) {
     if (result.error) return;
-    selected = result;
-    visualizeOpen = true;
 
+    let displayResult = result;
     const file = fileArray.find(f => f.name === result.fileName);
     if (file) {
       try {
         const buffer = await file.arrayBuffer();
         const { extractGlyphPaths } = await import('$lib/opentypeAnalyzer.js');
         const otPaths = extractGlyphPaths(buffer);
-        if (!visualizeOpen || selected !== result) return;
         const enriched = { ...result };
         for (const g of ['i', 'h', 'o']) {
           if (enriched[g] && otPaths[g]?.length) {
             enriched[g] = { ...enriched[g], commands: otPaths[g] };
           }
         }
-        selected = enriched;
+        displayResult = enriched;
       } catch (_) {}
     }
+
+    selected = displayResult;
+    visualizeOpen = true;
   }
 
   function closeVisualization() {
