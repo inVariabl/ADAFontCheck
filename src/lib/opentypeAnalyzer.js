@@ -225,6 +225,15 @@ function analyzeGlyph(font, letter, options = {}) {
   return metric;
 }
 
+export function extractGlyphPaths(buffer) {
+  const font = parse(buffer);
+  return {
+    i: glyphPath(font, 'I'),
+    h: glyphPath(font, 'H'),
+    o: glyphPath(font, 'O')
+  };
+}
+
 export function analyzeFontWithOpenType(buffer, fileName = '') {
   const font = parse(buffer);
   const subfamily = getFirstNameEntry(font, ['preferredSubfamily', 'fontSubfamily'], 'Regular');

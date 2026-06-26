@@ -444,7 +444,8 @@ static int cffr_exec(CFFRunner *r, const unsigned char *cs, int cs_len) {
           else { int dy = cffr_pop(r), dx = cffr_pop(r); r->x += dx; r->y += dy; }
         } else if (r->sp >= 2) { int dy = cffr_pop(r), dx = cffr_pop(r); r->x += dx; r->y += dy; }
         r->sp = 0;
-        if (!r->first_moveto) { cffr_emit(r, STBTT_vmove, r->x, r->y, 0,0,0,0); r->first_moveto = 1; }
+        cffr_emit(r, STBTT_vmove, r->x, r->y, 0, 0, 0, 0);
+        r->width_done = 1;
         continue;
       }
       if (op == 22) { // hmoveto
@@ -454,7 +455,8 @@ static int cffr_exec(CFFRunner *r, const unsigned char *cs, int cs_len) {
           else { int dx = cffr_pop(r); r->x += dx; }
         } else if (r->sp >= 1) { int dx = cffr_pop(r); r->x += dx; }
         r->sp = 0;
-        if (!r->first_moveto) { cffr_emit(r, STBTT_vmove, r->x, r->y, 0,0,0,0); r->first_moveto = 1; }
+        cffr_emit(r, STBTT_vmove, r->x, r->y, 0, 0, 0, 0);
+        r->width_done = 1;
         continue;
       }
       if (op == 4) { // vmoveto
@@ -464,7 +466,8 @@ static int cffr_exec(CFFRunner *r, const unsigned char *cs, int cs_len) {
           else { int dy = cffr_pop(r); r->y += dy; }
         } else if (r->sp >= 1) { int dy = cffr_pop(r); r->y += dy; }
         r->sp = 0;
-        if (!r->first_moveto) { cffr_emit(r, STBTT_vmove, r->x, r->y, 0,0,0,0); r->first_moveto = 1; }
+        cffr_emit(r, STBTT_vmove, r->x, r->y, 0, 0, 0, 0);
+        r->width_done = 1;
         continue;
       }
 
@@ -474,50 +477,80 @@ static int cffr_exec(CFFRunner *r, const unsigned char *cs, int cs_len) {
       if (op == 7) { int alt=0; while (r->sp >= 1) { int v=cffr_pop(r); if(!alt) r->y+=v; else r->x+=v; cffr_emit(r,STBTT_vline,r->x,r->y,0,0,0,0); alt=!alt; } continue; }
 
       // Curves (cubic)
-      if (op == 8) {
+      if (op == 8) { // rrcurveto: {dx1 dy1 dx2 dy2 dx3 dy3}+
         while (r->sp >= 6) {
           int dy3=cffr_pop(r),dx3=cffr_pop(r),dy2=cffr_pop(r),dx2=cffr_pop(r),dy1=cffr_pop(r),dx1=cffr_pop(r);
-          int nx=r->x+dx3,ny=r->y+dy3;
-          cffr_emit(r,STBTT_vcubic,nx,ny,r->x+dx1,r->y+dy1,r->x+dx2,r->y+dy2);
+          int cp1x=r->x+dx1,cp1y=r->y+dy1;
+          int cp2x=cp1x+dx2,cp2y=cp1y+dy2;
+          int nx=cp2x+dx3,ny=cp2y+dy3;
+          cffr_emit(r,STBTT_vcubic,nx,ny,cp1x,cp1y,cp2x,cp2y);
           r->x=nx;r->y=ny;
         }
         continue;
       }
-      if (op == 24) { // rcurveline
-        while (r->sp >= 8) {
-          int dy3=cffr_pop(r),dx3=cffr_pop(r),dy2=cffr_pop(r),dx2=cffr_pop(r),dy1=cffr_pop(r),dx1=cffr_pop(r);
-          int nx=r->x+dx3,ny=r->y+dy3;
-          cffr_emit(r,STBTT_vcubic,nx,ny,r->x+dx1,r->y+dy1,r->x+dx2,r->y+dy2);
-          r->x=nx;r->y=ny;
-        }
-        if (r->sp >= 2) { int dy=cffr_pop(r),dx=cffr_pop(r); r->x+=dx;r->y+=dy; cffr_emit(r,STBTT_vline,r->x,r->y,0,0,0,0); }
+      if (op == 24) { // rcurveline: {dx1 dy1 dx2 dy2 dx3 dy3}+ dx dy
+        // line args are at top of stack; pop them first, then process curves
+        if (r->sp >= 8) {
+          int line_dy=cffr_pop(r),line_dx=cffr_pop(r);
+          while (r->sp >= 6) {
+            int dy3=cffr_pop(r),dx3=cffr_pop(r),dy2=cffr_pop(r),dx2=cffr_pop(r),dy1=cffr_pop(r),dx1=cffr_pop(r);
+            int cp1x=r->x+dx1,cp1y=r->y+dy1;
+            int cp2x=cp1x+dx2,cp2y=cp1y+dy2;
+            int nx=cp2x+dx3,ny=cp2y+dy3;
+            cffr_emit(r,STBTT_vcubic,nx,ny,cp1x,cp1y,cp2x,cp2y);
+            r->x=nx;r->y=ny;
+          }
+          r->x+=line_dx;r->y+=line_dy;
+          cffr_emit(r,STBTT_vline,r->x,r->y,0,0,0,0);
+        } else r->sp=0;
         continue;
       }
-      if (op == 25) { // rlinecurve
+      if (op == 25) { // rlinecurve: {dx dy}+ dx1 dy1 dx2 dy2 dx3 dy3
+        // curve args are at top of stack (last pushed); pop them first
         if (r->sp < 8) continue;
         int dy3=cffr_pop(r),dx3=cffr_pop(r),dy2=cffr_pop(r),dx2=cffr_pop(r),dy1=cffr_pop(r),dx1=cffr_pop(r);
         while (r->sp >= 2) { int dy=cffr_pop(r),dx=cffr_pop(r); r->x+=dx;r->y+=dy; cffr_emit(r,STBTT_vline,r->x,r->y,0,0,0,0); }
-        int nx=r->x+dx3,ny=r->y+dy3;
-        cffr_emit(r,STBTT_vcubic,nx,ny,r->x+dx1,r->y+dy1,r->x+dx2,r->y+dy2);
+        int cp1x=r->x+dx1,cp1y=r->y+dy1;
+        int cp2x=cp1x+dx2,cp2y=cp1y+dy2;
+        int nx=cp2x+dx3,ny=cp2y+dy3;
+        cffr_emit(r,STBTT_vcubic,nx,ny,cp1x,cp1y,cp2x,cp2y);
         r->x=nx;r->y=ny;
         continue;
       }
-      if (op == 26) { // vvcurveto
-        if (r->sp == 4) {
+      if (op == 26) { // vvcurveto: [dx1] dya dxb dyb dyc
+        if (r->sp == 4) { // dya dxb dyb dyc (dx1=0 implicit)
           int dy3=cffr_pop(r),dy2=cffr_pop(r),dx2=cffr_pop(r),dy1=cffr_pop(r);
-          int nx=r->x,ny=r->y+dy3;
-          cffr_emit(r,STBTT_vcubic,nx,ny,r->x,r->y+dy1,r->x+dx2,r->y+dy2);
-          r->x=nx;r->y=ny;
-        } else r->sp = 0;
+          int cp1y=r->y+dy1;
+          int cp2y=cp1y+dy2;
+          int ny=cp2y+dy3;
+          cffr_emit(r,STBTT_vcubic,r->x+dx2,ny,r->x,cp1y,r->x+dx2,cp2y);
+          r->x=r->x+dx2;r->y=ny;
+        } else if (r->sp == 5) { // dx1 dya dxb dyb dyc
+          int dy3=cffr_pop(r),dy2=cffr_pop(r),dx2=cffr_pop(r),dy1=cffr_pop(r),dx1=cffr_pop(r);
+          int cp1x=r->x+dx1,cp1y=r->y+dy1;
+          int cp2x=cp1x+dx2,cp2y=cp1y+dy2;
+          int ny=cp2y+dy3;
+          cffr_emit(r,STBTT_vcubic,cp2x,ny,cp1x,cp1y,cp2x,cp2y);
+          r->x=cp2x;r->y=ny;
+        } else r->sp=0;
         continue;
       }
-      if (op == 27) { // hhcurveto
-        if (r->sp == 4) {
+      if (op == 27) { // hhcurveto: [dy1] dxa dxb dyb dxc
+        if (r->sp == 4) { // dxa dxb dyb dxc (dy1=0 implicit)
           int dx3=cffr_pop(r),dy2=cffr_pop(r),dx2=cffr_pop(r),dx1=cffr_pop(r);
-          int nx=r->x+dx3,ny=r->y;
-          cffr_emit(r,STBTT_vcubic,nx,ny,r->x+dx1,r->y,r->x+dx2,r->y+dy2);
-          r->x=nx;r->y=ny;
-        } else r->sp = 0;
+          int cp1x=r->x+dx1;
+          int cp2x=cp1x+dx2,cp2y=r->y+dy2;
+          int nx=cp2x+dx3;
+          cffr_emit(r,STBTT_vcubic,nx,cp2y,cp1x,r->y,cp2x,cp2y);
+          r->x=nx;r->y=cp2y;
+        } else if (r->sp == 5) { // dy1 dxa dxb dyb dxc
+          int dx3=cffr_pop(r),dy2=cffr_pop(r),dx2=cffr_pop(r),dx1=cffr_pop(r),dy1=cffr_pop(r);
+          int cp1x=r->x+dx1,cp1y=r->y+dy1;
+          int cp2x=cp1x+dx2,cp2y=cp1y+dy2;
+          int nx=cp2x+dx3;
+          cffr_emit(r,STBTT_vcubic,nx,cp2y,cp1x,cp1y,cp2x,cp2y);
+          r->x=nx;r->y=cp2y;
+        } else r->sp=0;
         continue;
       }
       if (op == 30) { // vhcurveto: alternating {dy1 dx2 dy2 dx3}+ / {dx1 dx2 dy2 dx3}+
@@ -561,23 +594,31 @@ static int cffr_exec(CFFRunner *r, const unsigned char *cs, int cs_len) {
       if (op == (0x0C00 | 0x22)) { // hflex: dx1 dx2 dy2 dx3 dx4 dx5 dx6
         if (r->sp >= 7) {
           int dx6=cffr_pop(r),dx5=cffr_pop(r),dx4=cffr_pop(r),dx3=cffr_pop(r),dy2=cffr_pop(r),dx2=cffr_pop(r),dx1=cffr_pop(r);
-          int midx = r->x + dx3;
-          cffr_emit(r,STBTT_vcubic,midx,r->y,r->x+dx1,r->y,r->x+dx1+dx2,r->y+dy2);
-          int endx = midx + dx4 + dx5 + dx6;
-          cffr_emit(r,STBTT_vcubic,endx,r->y,midx+dx4,r->y,midx+dx4+dx5,r->y-dy2);
-          r->x = endx;
+          int cp1x=r->x+dx1;
+          int cp2x=cp1x+dx2,cp2y=r->y+dy2;
+          int midx=cp2x+dx3; // mid.y = r->y (hflex: endpoint y = start y)
+          cffr_emit(r,STBTT_vcubic,midx,r->y,cp1x,r->y,cp2x,cp2y);
+          int mcp1x=midx+dx4;
+          int mcp2x=mcp1x+dx5,mcp2y=r->y-dy2;
+          int endx=mcp2x+dx6;
+          cffr_emit(r,STBTT_vcubic,endx,r->y,mcp1x,r->y,mcp2x,mcp2y);
+          r->x=endx;
         }
         continue;
       }
-      if (op == (0x0C00 | 0x23)) { // flex: 13 values
+      if (op == (0x0C00 | 0x23)) { // flex: dx1 dy1 dx2 dy2 dx3 dy3 dx4 dy4 dx5 dy5 dx6 dy6 fd
         if (r->sp >= 13) {
           int fd=cffr_pop(r),dy6=cffr_pop(r),dx6=cffr_pop(r),dy5=cffr_pop(r),dx5=cffr_pop(r);
           int dy4=cffr_pop(r),dx4=cffr_pop(r),dy3=cffr_pop(r),dx3=cffr_pop(r),dy2=cffr_pop(r),dx2=cffr_pop(r),dy1=cffr_pop(r),dx1=cffr_pop(r);
           (void)fd;
-          int mx=r->x+dx3,my=r->y+dy3;
-          cffr_emit(r,STBTT_vcubic,mx,my,r->x+dx1,r->y+dy1,r->x+dx2,r->y+dy2);
-          int ex=r->x+dx3+dx4+dx5+dx6,ey=r->y+dy3+dy4+dy5+dy6;
-          cffr_emit(r,STBTT_vcubic,ex,ey,r->x+dx3+dx4,r->y+dy3+dy4,r->x+dx3+dx4+dx5,r->y+dy3+dy4+dy5);
+          int cp1x=r->x+dx1,cp1y=r->y+dy1;
+          int cp2x=cp1x+dx2,cp2y=cp1y+dy2;
+          int mx=cp2x+dx3,my=cp2y+dy3;
+          cffr_emit(r,STBTT_vcubic,mx,my,cp1x,cp1y,cp2x,cp2y);
+          int mcp1x=mx+dx4,mcp1y=my+dy4;
+          int mcp2x=mcp1x+dx5,mcp2y=mcp1y+dy5;
+          int ex=mcp2x+dx6,ey=mcp2y+dy6;
+          cffr_emit(r,STBTT_vcubic,ex,ey,mcp1x,mcp1y,mcp2x,mcp2y);
           r->x=ex;r->y=ey;
         }
         continue;
@@ -586,38 +627,33 @@ static int cffr_exec(CFFRunner *r, const unsigned char *cs, int cs_len) {
         if (r->sp >= 10) {
           int dy6=cffr_pop(r),dx6=cffr_pop(r),dy5=cffr_pop(r),dx5=cffr_pop(r);
           int dx4=cffr_pop(r),dx3=cffr_pop(r),dy2=cffr_pop(r),dx2=cffr_pop(r),dy1=cffr_pop(r),dx1=cffr_pop(r);
-          int mx=r->x+dx3,my=r->y+dy1;
-          cffr_emit(r,STBTT_vcubic,mx,my,r->x+dx1,r->y+dy1,r->x+dx2,r->y+dy2);
-          int ex=mx+dx4+dx5+dx6,ey=my+dy5+dy6;
-          cffr_emit(r,STBTT_vcubic,ex,ey,mx+dx4,my,mx+dx4+dx5,my+dy5);
+          int cp1x=r->x+dx1,cp1y=r->y+dy1;
+          int cp2x=cp1x+dx2,cp2y=cp1y+dy2;
+          int mx=cp2x+dx3,my=cp2y; // dy3=0
+          cffr_emit(r,STBTT_vcubic,mx,my,cp1x,cp1y,cp2x,cp2y);
+          int mcp1x=mx+dx4; // dy4=0
+          int mcp2x=mcp1x+dx5,mcp2y=my+dy5;
+          int ex=mcp2x+dx6,ey=mcp2y+dy6;
+          cffr_emit(r,STBTT_vcubic,ex,ey,mcp1x,my,mcp2x,mcp2y);
           r->x=ex;r->y=ey;
         }
         continue;
       }
-      if (op == (0x0C00 | 0x25)) { // flex1: dx1 dy1 ... dx6 dy6 flex_depth
+      if (op == (0x0C00 | 0x25)) { // flex1: dx1 dy1 dx2 dy2 dx3 dy3 dx4 dy4 dx5 dy5 dx6 dy6 fd
         if (r->sp >= 13) {
           int fd=cffr_pop(r),dy6=cffr_pop(r),dx6=cffr_pop(r);
           int dy5=cffr_pop(r),dx5=cffr_pop(r),dy4=cffr_pop(r),dx4=cffr_pop(r);
           int dy3=cffr_pop(r),dx3=cffr_pop(r),dy2=cffr_pop(r),dx2=cffr_pop(r),dy1=cffr_pop(r),dx1=cffr_pop(r);
           (void)fd;
-          int total_dx = dx1+dx2+dx3+dx4+dx5+dx6;
-          int total_dy = dy1+dy2+dy3+dy4+dy5+dy6;
-          if (total_dx == 0 || total_dy == 0) {
-            // Single curve: first 6 dx/dy define first curve, last 6 define nothing special
-            // Actually flex1 with all-horizontal or all-vertical displacements: single curve
-            int mx=r->x+dx3,my=r->y+dy3;
-            cffr_emit(r,STBTT_vcubic,mx,my,r->x+dx1,r->y+dy1,r->x+dx2,r->y+dy2);
-            int ex=r->x+total_dx,ey=r->y+total_dy;
-            cffr_emit(r,STBTT_vcubic,ex,ey,mx+dx4,my+dy4,mx+dx4+dx5,my+dy4+dy5);
-            r->x=ex;r->y=ey;
-          } else {
-            // Two curves
-            int mx=r->x+dx3,my=r->y+dy3;
-            cffr_emit(r,STBTT_vcubic,mx,my,r->x+dx1,r->y+dy1,r->x+dx2,r->y+dy2);
-            int ex=r->x+total_dx,ey=r->y+total_dy;
-            cffr_emit(r,STBTT_vcubic,ex,ey,mx+dx4,my+dy4,mx+dx4+dx5,my+dy4+dy5);
-            r->x=ex;r->y=ey;
-          }
+          int cp1x=r->x+dx1,cp1y=r->y+dy1;
+          int cp2x=cp1x+dx2,cp2y=cp1y+dy2;
+          int mx=cp2x+dx3,my=cp2y+dy3;
+          cffr_emit(r,STBTT_vcubic,mx,my,cp1x,cp1y,cp2x,cp2y);
+          int mcp1x=mx+dx4,mcp1y=my+dy4;
+          int mcp2x=mcp1x+dx5,mcp2y=mcp1y+dy5;
+          int ex=mcp2x+dx6,ey=mcp2y+dy6;
+          cffr_emit(r,STBTT_vcubic,ex,ey,mcp1x,mcp1y,mcp2x,mcp2y);
+          r->x=ex;r->y=ey;
         }
         continue;
       }
