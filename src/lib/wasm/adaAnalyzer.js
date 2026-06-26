@@ -77,21 +77,22 @@ function readVertices(view, offset, count) {
   for (let i = 0; i < limit; i += 1) {
     const base = offset + i * VERTEX_STRIDE;
     const type = VERTEX_TYPES[view.getInt32(base, true)] ?? 'M';
+    // stb_truetype uses Y-up (TrueType font space); negate Y to convert to canvas Y-down
     const command = {
       type,
       x: view.getInt32(base + SZ_INT, true),
-      y: view.getInt32(base + 2 * SZ_INT, true)
+      y: -view.getInt32(base + 2 * SZ_INT, true)
     };
 
     if (type === 'Q' || type === 'C') {
       command.cx = view.getInt32(base + 3 * SZ_INT, true);
-      command.cy = view.getInt32(base + 4 * SZ_INT, true);
+      command.cy = -view.getInt32(base + 4 * SZ_INT, true);
       command.x1 = command.cx;
       command.y1 = command.cy;
     }
     if (type === 'C') {
       command.cx1 = view.getInt32(base + 5 * SZ_INT, true);
-      command.cy1 = view.getInt32(base + 6 * SZ_INT, true);
+      command.cy1 = -view.getInt32(base + 6 * SZ_INT, true);
       command.x2 = command.cx1;
       command.y2 = command.cy1;
     }
@@ -101,45 +102,46 @@ function readVertices(view, offset, count) {
   return commands;
 }
 
+const textDecoder = new TextDecoder();
+
 function readString(buf, offset, len) {
   if (len <= 0) {
     return '';
   }
   const bytes = new Uint8Array(buf, offset, len);
-  return new TextDecoder().decode(bytes).replace(/\0+$/, '');
+  return textDecoder.decode(bytes).replace(/\0+$/, '');
 }
 
-export async function analyzeFont(buffer) {
+export async function getVariableInstances(buffer) {
   const { exports, memory } = await loadAdaAnalyzer();
 
   const fontPtr = exports.get_font_ptr();
-  const resultPtr = exports.get_result_ptr();
-
   const data = new Uint8Array(buffer);
-  if (data.length > 8 * 1024 * 1024) {
-    return { error: 'Font too large (>8MB)' };
-  }
+  if (data.length > 8 * 1024 * 1024) return [];
 
   new Uint8Array(memory.buffer, fontPtr, data.length).set(data);
-  const ret = exports.analyze_font(data.length);
-  if (ret !== 0) {
-    const errors = {
-      [-1]: 'Failed to parse font',
-      [-3]: 'Variable font (not supported)',
-      [-4]: 'CFF2 font (not supported)'
-    };
-    return { error: errors[ret] || 'Failed to parse font' };
-  }
+  const count = exports.prepare_instances(data.length);
+  if (!count) return [];
 
+  const namePtr = exports.get_instance_name_ptr();
+  const instances = [];
+  for (let i = 0; i < count; i++) {
+    exports.fill_instance_name(i);
+    const nameBytes = new Uint8Array(memory.buffer, namePtr);
+    let end = 0;
+    while (end < 128 && nameBytes[end] !== 0) end++;
+    instances.push({ index: i, name: textDecoder.decode(nameBytes.subarray(0, end)) });
+  }
+  return instances;
+}
+
+function readResultFromMemory(memory, resultPtr) {
   const view = new DataView(memory.buffer, resultPtr);
   const err = view.getInt32(OFF_ERROR, true);
-  if (err) {
-    return { error: 'Font analysis failed' };
-  }
+  if (err) return { error: 'Font analysis failed' };
 
   const nameLen = view.getInt32(OFF_NAME_LEN, true);
   const subfamilyLen = view.getInt32(OFF_SUBFAMILY_LEN, true);
-
   const iCount = view.getInt32(OFF_I_XC, true);
   const hCount = view.getInt32(OFF_H_XC, true);
   const oCount = view.getInt32(OFF_O_XC, true);
@@ -152,7 +154,7 @@ export async function analyzeFont(buffer) {
     weight: subfamilyLen > 0 ? readString(memory.buffer, resultPtr + OFF_SUBFAMILY, subfamilyLen) : 'Regular',
     i: {
       x: readFloatArray(view, OFF_I_X, iCount),
-      y: readFloatArray(view, OFF_I_Y, iCount),
+      y: readFloatArray(view, OFF_I_Y, iCount).map(v => -v),
       width: view.getFloat32(OFF_I_W, true),
       height: view.getFloat32(OFF_I_H, true),
       ratio: view.getFloat32(OFF_I_R, true),
@@ -160,7 +162,7 @@ export async function analyzeFont(buffer) {
     },
     h: {
       x: readFloatArray(view, OFF_H_X, hCount),
-      y: readFloatArray(view, OFF_H_Y, hCount),
+      y: readFloatArray(view, OFF_H_Y, hCount).map(v => -v),
       width: view.getFloat32(OFF_H_W, true),
       height: view.getFloat32(OFF_H_H, true),
       ratio: view.getFloat32(OFF_H_R, true),
@@ -168,7 +170,7 @@ export async function analyzeFont(buffer) {
     },
     o: {
       x: readFloatArray(view, OFF_O_X, oCount),
-      y: readFloatArray(view, OFF_O_Y, oCount),
+      y: readFloatArray(view, OFF_O_Y, oCount).map(v => -v),
       width: view.getFloat32(OFF_O_W, true),
       height: view.getFloat32(OFF_O_H, true),
       ratio: view.getFloat32(OFF_O_R, true),
@@ -181,4 +183,35 @@ export async function analyzeFont(buffer) {
       sansSerif: view.getInt32(OFF_IS_SANS, true) !== 0
     }
   };
+}
+
+export async function analyzeFontInstance(buffer, instanceIndex) {
+  const { exports, memory } = await loadAdaAnalyzer();
+
+  const fontPtr = exports.get_font_ptr();
+  const resultPtr = exports.get_result_ptr();
+  const data = new Uint8Array(buffer);
+  if (data.length > 8 * 1024 * 1024) return { error: 'Font too large (>8MB)' };
+
+  new Uint8Array(memory.buffer, fontPtr, data.length).set(data);
+  const ret = exports.analyze_font_instance(data.length, instanceIndex);
+  if (ret !== 0) return { error: 'Failed to analyze font instance' };
+
+  return readResultFromMemory(memory, resultPtr);
+}
+
+export async function analyzeFont(buffer) {
+  const { exports, memory } = await loadAdaAnalyzer();
+
+  const fontPtr = exports.get_font_ptr();
+  const resultPtr = exports.get_result_ptr();
+
+  const data = new Uint8Array(buffer);
+  if (data.length > 8 * 1024 * 1024) return { error: 'Font too large (>8MB)' };
+
+  new Uint8Array(memory.buffer, fontPtr, data.length).set(data);
+  const ret = exports.analyze_font(data.length);
+  if (ret !== 0) return { error: 'Failed to parse font' };
+
+  return readResultFromMemory(memory, resultPtr);
 }

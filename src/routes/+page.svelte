@@ -1,18 +1,9 @@
 <script>
   import { onDestroy } from 'svelte';
   import { downloadResultsCsv } from '$lib/csv.js';
+  import '$lib/randomUUID.js';
   import '../../dist/style.css';
   import './styles.css';
-
-  if (typeof globalThis.crypto?.randomUUID !== 'function') {
-    const g = globalThis;
-    if (!g.crypto) g.crypto = {};
-    g.crypto.randomUUID = () =>
-      'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        const r = (Math.random() * 16) | 0;
-        return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
-      });
-  }
 
   const columns = [
     {
@@ -688,7 +679,7 @@
 <label for="about-modal" class="modal cursor-pointer">
   <label class="modal-box relative" for="">
     <h3 class="text-lg font-bold">About ADA Font Check</h3>
-    <p class="py-4">ADAFontCheck determines if a font meets U.S. Federal and California ADA accessibility regulations for tactile and visual signage using <a class="link" href="https://opentype.js.org/">opentype.js</a> with a C/WASM fast path.</p>
+    <p class="py-4">ADAFontCheck determines if a font meets U.S. Federal and California ADA accessibility regulations for tactile and visual signage using a C/WASM analysis engine, with an <a class="link" href="https://opentype.js.org/">opentype.js</a> fallback for unsupported font formats.</p>
   </label>
 </label>
 

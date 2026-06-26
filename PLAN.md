@@ -1,81 +1,121 @@
-# SvelteKit + Web Worker + C WASM Plan
+Here's the plan:
 
-## Goal
+---
 
-Move ADAFontCheck to a SvelteKit app where font uploads are processed in a Web Worker and all font parsing, glyph metric extraction, and ADA compliance checks run through C compiled to WebAssembly. Eliminate the opentype.js JavaScript dependency entirely.
+## Plan: Full opentype.js Elimination
 
-## Architecture
+### Phase 1 — Measure first (1 hour)
 
-1. SvelteKit owns the app shell, upload controls, results table, CSV export, glyph inspector, print report, and static deployment output.
-2. A dedicated Web Worker receives uploaded font `ArrayBuffer`s, copies them into shared WASM linear memory, and calls C functions to parse the font, extract glyph metrics, detect serif/italic, and compute compliance results.
-3. Two C WASM modules serve distinct roles:
-   - **`ada_metrics.c`** — deterministic numeric helpers for ratios, averages, range checks, and the four ADA compliance decisions (Federal/California × Tactile/Visual).
-   - **`ada_analyzer.c`** — full OpenType/TrueType font parsing via `stb_truetype.h`, glyph vertex extraction for I/H/O, sans-serif classification, italic detection, and serialization of path commands for the glyph inspector canvas renderer.
-4. Static media stays in `media/`; SvelteKit serves it from `static/media/`.
+Fix `looksEmpty` so you know your real fallback rate before writing any code:
 
-## Implementation Steps
+```js
+function looksEmpty(result) {
+  return !result || !result.i || !result.h || !result.o ||
+    (result.stroke.ratio === 0 && result.body.ratio === 0);
+}
+```
 
-### Step 1: Extend `ada_analyzer.c` — store glyph vertex data
+Run a large diverse font collection and read the console output. This tells you exactly what you're dealing with — if fallback count is already near zero, the remaining phases collapse significantly.
 
-- Increase `RESULT_SIZE` from 4096 to 8192 to accommodate vertex command data.
-- After extracting metrics for each glyph (I/H/O), store the `stbtt_vertex` arrays (type, x, y, cx, cy, cx1, cy1) into the result buffer.
-- No new WASM exports needed; the existing `get_result_ptr` export provides access.
+---
 
-### Step 2: Update `adaAnalyzer.js` — read vertex data, build commands
+### Phase 2 — Variable fonts (1–2 days)
 
-- Add offset constants for vertex data sections in the result buffer.
-- Convert `stbtt_vertex` data to canvas-compatible command objects:
+**Step 1: Remove the `fvar` early-out**
 
-| stbtt_vertex type | Canvas command |
-|---|---|
-| `STBTT_vmove` (1) | `M(x, y)` |
-| `STBTT_vline` (2) | `L(x, y)` |
-| `STBTT_vcurve` (3) | `Q(cx, cy, x, y)` |
-| `STBTT_vcubic` (4) | `C(cx1, cy1, cx, cy, x, y)` |
+```c
+// Delete this line in analyze_font():
+if (stbtt__find_table(font_data, offset, "fvar")) { out->error = -3; return -3; }
+```
 
-- Import `loadAdaMetrics` and call it once in the worker to run the four compliance checks (federal/california × tactile/visual) against the extracted ratios.
-- Return a result shape matching what the Svelte page expects (`name`, `weight`, `i`/`h`/`o` glyph objects with `commands`, `test` object with compliance results, etc.).
+This makes variable fonts fall through to your existing TrueType or CFF1 parser and analyze the default instance. Test against a handful of variable fonts — stb_truetype handles the default glyph table fine.
 
-### Step 3: Rewrite `fontWorker.js` — use C analyzer exclusively
+**Step 2: Read named instances from `fvar`**
 
-- Load both `adaMetrics` and `adaAnalyzer` WASM modules on worker start.
-- For each file:
-  1. Copy the `ArrayBuffer` into WASM memory via the `get_font_ptr` export.
-  2. Call `analyze_font(data_size)`.
-  3. Read the structured result from `get_result_ptr`.
-  4. Call `adaMetrics` compliance functions with extracted body/stroke ratios.
-  5. Apply filename-derived fallback for name/weight via `fontName.js` (thin JS wrapper, not opentype.js).
-- Remove the `import { parse } from 'opentype.js'` — this is the core elimination.
+Add a new C function that parses the `fvar` table and returns the list of named instances:
 
-### Step 4: Update `+page.svelte` — remove opentype.js from glyph inspector
+```c
+// Returns count of named instances, fills out a name/index array
+int get_variable_instances(const unsigned char *fc, int offset, 
+                           char names[][64], int *count);
+```
 
-- Remove `import { parse } from 'opentype.js'`.
-- Remove the `showInspector()` function that re-parsed fonts with opentype.js — commands are already present in the result from the worker.
-- Remove the `fontBuffers` map (only used by the old inspector).
-- `drawGlyph()` and `drawSelectedGlyphs()` work unchanged — they already use `metrics.commands`.
+The `fvar` table structure is straightforward — axis records followed by instance records, each with a `nameID` you look up in the `name` table (which you already know how to parse).
 
-### Step 5: Remove opentype.js from dependencies
+**Step 3: Add `gvar` delta interpolation**
 
-- `npm uninstall opentype.js`
-- Remove from `package.json`.
+This is the main C work. For each named instance you need to:
 
-### Step 6: Clean up obsolete files
+1. Read the `gvar` table header to find per-glyph delta data
+2. For I, H, and O glyphs, fetch their delta tuples for the given axis values
+3. Apply scalar interpolation to the default glyph coordinates
+4. Pass the blended coordinates through your existing metrics extraction
 
-- Delete `src/lib/fontAnalyzer.js` (all logic moved to C + thin worker adapter).
-- Delete `src/checkfont.js`, `src/index.js`, `src/style.css` (legacy v1 code superseded by SvelteKit).
-- Delete `src/index.html` (legacy v1 single-page app).
-- Keep `src/checkfont_node.js` if the Node.js CLI use case is still valued (separate tool).
-- Keep `src/lib/fontName.js` (used in worker for filename-derived name/weight fallback).
+Roughly 300–400 lines of C. The spec (OpenType 1.9, `gvar` section) is the reference. The tricky parts are tuple variation encoding and scalar computation — worth getting right since errors produce subtly wrong coordinates rather than obvious crashes.
 
-### Step 7: Update build artifacts
+**Step 4: Update the WASM JS wrapper**
 
-- Run `npm run wasm` to recompile both `.c` files.
-- Run `npm run build` to produce the static site.
-- Verify with `svelte-check`.
+Add a new export and reader in `adaAnalyzer.js`:
 
-## Notes
+```js
+export async function getVariableInstances(buffer) { ... }
+export async function analyzeFontInstance(buffer, axisValues) { ... }
+```
 
-- `stb_truetype.h` provides all OpenType/TrueType parsing in C — no JavaScript font parsing library remains.
-- The WASM boundary stays simple: font data is copied into linear memory, C functions operate on it, and structured results are read back through a fixed-size result buffer.
-- The Web Worker keeps all font processing off the UI thread, even with WASM overhead.
-- `fontName.js` (filename-based metadata fallback) remains as a trivial JS utility — it does not parse the font binary.
+**Step 5: Update `fontWorker.js`**
+
+When a font has named instances, analyze each one separately and return an array of results rather than a single result. The worker message shape stays the same — just potentially more results per file.
+
+**Step 6: Update `+page.svelte`**
+
+Group results by filename when a font produces multiple instances. Display them as sub-rows or an expandable section under the font name. Each instance gets its own pass/fail row.
+
+---
+
+### Phase 3 — CFF2 fonts (2–3 days)
+
+This is the last remaining gap. CFF2 is the variable font equivalent of CFF1 — used in newer Adobe and Google fonts. Your existing `cffr_exec` handles CFF1 charstrings; CFF2 is a subset of that with some differences:
+
+**Key differences from CFF1:**
+- No `seac` operator
+- No `endchar` with arguments  
+- `blend` operator (you can ignore the variation part — just consume the operands and use the default values)
+- Different subroutine bias (same formula, just verify)
+- Width is stored in `hmtx`, not the charstring
+
+**Implementation steps:**
+
+1. Detect CFF2: `stbtt__find_table(font_data, offset, "CFF2")` — you already do this, just remove the early-out
+2. Add a `analyze_cff2_font()` function modeled on your existing `analyze_cff_font()` 
+3. Add CFF2 charstring handling to a `cffr2_exec()` — mostly the same as `cffr_exec` with the `blend` operator consuming and discarding variation deltas
+4. For named instances in CFF2 variable fonts, the variation data lives in `ItemVariationStore` inside the CFF2 table itself rather than `gvar` — this is the complex part if you want full instance support, but for default instance analysis you can skip it entirely
+
+Realistically if you just want default instance support for CFF2, it's closer to 100–150 lines since your CFF1 runner already does the heavy lifting.
+
+---
+
+### Phase 4 — Cleanup (2–3 hours)
+
+Once Phases 2 and 3 are done and tested:
+
+1. Delete `src/lib/opentypeAnalyzer.js`
+2. Remove the fallback branch from `fontWorker.js`
+3. Remove `analyzeFontWithOpenType` import
+4. `npm uninstall opentype.js`
+5. Update the "About" modal text
+6. Fix the `ceil()` and `pow()` math stubs while you're in the C file
+7. Cache the `TextDecoder` instance in `adaAnalyzer.js`
+8. Run `npm run build` and verify bundle size drop
+
+---
+
+### Summary
+
+| Phase | Work | Payoff |
+|---|---|---|
+| 1 — Measure | 1 hour | Know exactly what's left |
+| 2 — Variable fonts | 1–2 days | Covers ~95% of real-world fallback cases, adds named instance support as a feature |
+| 3 — CFF2 | 2–3 days | Closes the last gap, mostly rare fonts |
+| 4 — Cleanup | 2–3 hours | opentype.js gone, bundle smaller, worker starts faster |
+
+The variable font work is the interesting one because it turns a limitation into an actual feature — instead of "this font isn't supported," you get "here are all 12 instances of this font and which ones pass." That's genuinely more useful than what static font checkers do.

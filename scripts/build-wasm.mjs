@@ -36,5 +36,7 @@ compile(
 compile(
   resolve('src/wasm/ada_analyzer.c'),
   resolve('src/lib/wasm/ada_analyzer.wasm'),
-  ['analyze_font', 'get_font_ptr', 'get_result_ptr']
+  ['analyze_font', 'get_font_ptr', 'get_result_ptr',
+   'prepare_instances', 'get_instance_name_ptr', 'fill_instance_name',
+   'analyze_font_instance']
 );

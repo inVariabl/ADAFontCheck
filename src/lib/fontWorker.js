@@ -1,17 +1,8 @@
-import { analyzeFont } from './wasm/adaAnalyzer.js';
+import { analyzeFont, getVariableInstances, analyzeFontInstance } from './wasm/adaAnalyzer.js';
 import { loadAdaMetrics } from './wasm/adaMetrics.js';
 import { deriveFontMetadataFromFilename } from './fontName.js';
 import { analyzeFontWithOpenType } from './opentypeAnalyzer.js';
-
-if (typeof globalThis.crypto?.randomUUID !== 'function') {
-  const g = globalThis;
-  if (!g.crypto) g.crypto = {};
-  g.crypto.randomUUID = () =>
-    'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
-    });
-}
+import './randomUUID.js';
 
 const adaMetricsPromise = loadAdaMetrics();
 
@@ -21,9 +12,6 @@ function looksEmpty(result) {
     !result.i ||
     !result.h ||
     !result.o ||
-    result.i.commands.length === 0 ||
-    result.h.commands.length === 0 ||
-    result.o.commands.length === 0 ||
     (result.stroke.ratio === 0 && result.body.ratio === 0)
   );
 }
@@ -77,10 +65,23 @@ async function analyzeOneFile(file, adaMetrics) {
     const fallbackResult = analyzeFontWithOpenType(file.buffer, file.name);
     totalFallbackTime += performance.now() - t1;
     fallbackCount++;
-    return buildResult(fallbackResult, file.name, adaMetrics);
+    return [buildResult(fallbackResult, file.name, adaMetrics)];
   }
 
-  return buildResult(analyzed, file.name, adaMetrics);
+  // Check for variable font named instances
+  const instances = await getVariableInstances(file.buffer);
+  if (instances.length > 0) {
+    const results = [];
+    for (const inst of instances) {
+      const instAnalyzed = await analyzeFontInstance(file.buffer, inst.index);
+      if (!instAnalyzed.error && !looksEmpty(instAnalyzed)) {
+        results.push(buildResult(instAnalyzed, file.name, adaMetrics));
+      }
+    }
+    if (results.length > 0) return results;
+  }
+
+  return [buildResult(analyzed, file.name, adaMetrics)];
 }
 
 self.addEventListener('message', async (event) => {
@@ -103,7 +104,8 @@ self.addEventListener('message', async (event) => {
 
     for (const file of files) {
       try {
-        results.push(await analyzeOneFile(file, adaMetrics));
+        const fileResults = await analyzeOneFile(file, adaMetrics);
+        for (const r of fileResults) results.push(r);
       } catch (error) {
         results.push({
           fileName: file.name,
